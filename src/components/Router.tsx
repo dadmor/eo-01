@@ -17,7 +17,7 @@ function Router() {
   return (
     <>
       <Navigation />
-      <div className="mt-16 bg-gray-50 min-h-screen">
+      <div className="pt-16 bg-gray-50 min-h-screen">
         <Routes>
           {/* Public routes */}
           <Route path="/login" element={<Login />} />

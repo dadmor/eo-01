@@ -22,11 +22,14 @@ function App() {
           list: Dashboard,
         },
       ]}
+      
       options={{
         syncWithLocation: false,
         warnWhenUnsavedChanges: true,
         disableTelemetry: true,
+        
       }}
+      catchAll={<div className="absolute">?</div>}
     >
       <Router />
     </Refine>

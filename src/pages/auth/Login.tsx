@@ -1,16 +1,27 @@
 // src/pages/auth/Login.tsx
 import React, { useState } from "react";
 import { useLogin } from "@pankod/refine-core";
-import { Link } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 
 export const Login: React.FC = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [searchParams] = useSearchParams();
+  
+  // Hook z Refine do logowania
   const { mutate: login, isLoading } = useLogin();
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    login({ email, password });
+    
+    // Sprawdź czy jest redirectPath w URL (z parametru 'to')
+    const redirectPath = searchParams.get("to") || "/";
+    
+    login({
+      email,
+      password,
+      redirectPath, // Przekaż ścieżkę przekierowania
+    });
   };
 
   return (
