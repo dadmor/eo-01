@@ -1,4 +1,4 @@
-// src/hooks/useAuth.tsx - wrapper na Refine auth
+// src/hooks/useAuth.tsx - ultra kompaktowa wersja
 import { useGetIdentity, useLogout } from "@pankod/refine-core";
 
 export const useAuth = () => {
