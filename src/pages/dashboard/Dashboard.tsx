@@ -47,6 +47,7 @@ export const Dashboard: React.FC = () => {
   };
 
   const handleNavigation = (path: string) => {
+    alert(path)
     navigate(path)
 
   };
