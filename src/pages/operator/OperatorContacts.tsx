@@ -130,7 +130,7 @@ export const OperatorContacts: React.FC = () => {
           title="Audytorzy"
           value={stats.auditors}
           subtitle="certyfikowanych"
-          color="orange"
+         
         />
       </div>
 
@@ -179,14 +179,15 @@ export const OperatorContacts: React.FC = () => {
                     <h3 className="text-lg font-semibold text-slate-900">
                       {contact.name || "Nie podano"}
                     </h3>
-                    <Badge
+                    {/* <Badge
                       color={
                         roleColors[contact.role as keyof typeof roleColors]
                       }
                       variant="soft"
                     >
                       {roleLabels[contact.role as keyof typeof roleLabels]}
-                    </Badge>
+                    </Badge> */}
+                    TODO -BADGE
                   </div>
 
                   <div className="space-y-2 text-sm text-slate-600">

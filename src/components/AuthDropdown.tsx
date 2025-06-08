@@ -1,22 +1,22 @@
 // src/components/AuthMenu.tsx
 
-import React from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '@/hooks/useAuth';
+import React from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/hooks/useAuth";
 
 const AuthDropdown: React.FC = () => {
   const { user, logout, delegatedUser } = useAuth(); // Dodajemy delegatedUser z kontekstu
   const navigate = useNavigate();
 
-  const handleLogin = () => navigate('/login');
+  const handleLogin = () => navigate("/login");
   const handleLogout = async () => {
     await logout();
-    navigate('/login');
+    navigate("/login");
   };
 
   const handleOpenDelegatedProfile = () => {
     // Możesz dostosować tę funkcję według potrzeb - np. otworzenie modala, przejście do profilu itp.
-    console.log('Otwieranie profilu delegowanego użytkownika:', delegatedUser);
+    console.log("Otwieranie profilu delegowanego użytkownika:", delegatedUser);
     // navigate(`/profile/${delegatedUser?.id}`);
     // lub otworzenie modala:
     // setShowDelegatedModal(true);
@@ -24,10 +24,7 @@ const AuthDropdown: React.FC = () => {
 
   if (!user) {
     return (
-      <button
-        onClick={handleLogin}
-        className="btn btn-sm btn-primary"
-      >
+      <button onClick={handleLogin} className="btn btn-sm btn-primary">
         Zaloguj
       </button>
     );
@@ -39,18 +36,12 @@ const AuthDropdown: React.FC = () => {
 
   return (
     <div className="dropdown dropdown-end">
-      <label tabIndex={0} className="btn btn-ghost btn-circle avatar">
-        <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-          isDelegated 
-            ? 'bg-warning text-warning-content' // Inny kolor dla delegowanego użytkownika
-            : 'bg-neutral-focus text-neutral-content'
-        }`}>
-          <span className="text-xs">
-            {displayUser.email.charAt(0).toUpperCase()}
-          </span>
+      <label tabIndex={0} className="avatar avatar-placeholder cursor-pointer">
+        <div className="w-10 h-10 rounded-full bg-neutral-300 text-primary-content flex items-center justify-center font-semibold">
+          {displayUser.email.charAt(0).toUpperCase()}
         </div>
       </label>
-      
+
       <ul
         tabIndex={0}
         className="dropdown-content menu p-2 shadow bg-base-100 rounded-box w-64 mt-2"
@@ -64,7 +55,7 @@ const AuthDropdown: React.FC = () => {
               </span>
             </li>
             <li>
-              <button 
+              <button
                 onClick={handleOpenDelegatedProfile}
                 className="justify-between hover:bg-base-200"
               >
@@ -85,7 +76,7 @@ const AuthDropdown: React.FC = () => {
             </li>
           </>
         )}
-        
+
         {/* Informacje o głównym użytkowniku */}
         <li>
           <span className="font-semibold break-words">
@@ -95,11 +86,14 @@ const AuthDropdown: React.FC = () => {
         <li>
           <span>Rola: {isDelegated ? user.role : displayUser.role}</span>
         </li>
-        
+
         {/* Opcje wylogowania */}
         <div className="divider my-1"></div>
         <li>
-          <button onClick={handleLogout} className="w-full text-left text-error">
+          <button
+            onClick={handleLogout}
+            className="w-full text-left text-error"
+          >
             Wyloguj
           </button>
         </li>
@@ -108,4 +102,4 @@ const AuthDropdown: React.FC = () => {
   );
 };
 
-export default AuthDropdown;  
+export default AuthDropdown;

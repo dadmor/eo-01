@@ -1,22 +1,18 @@
 // src/pages/auditor/AuditorOfferForm.tsx
-import React, { useState } from 'react';
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { 
-  Card, 
-  Button, 
-  LoadingSpinner, 
-  Alert 
-} from '../../components/ui/basic';
-import { 
-  FormField, 
-  FormInput, 
+import React, { useState } from "react";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { Card, Button, LoadingSpinner, Alert } from "../../components/ui/basic";
+import {
+  FormField,
+  FormInput,
   FormTextarea,
   SelectFilter,
-  type Option 
-} from '../../components/ui/form';
+  type Option,
+} from "../../components/ui/form";
 
-import { FileCheck, DollarSign, Calendar } from 'lucide-react';
-import { auditorApi, AuditorOfferData } from './api/auditors';
+import { FileCheck, DollarSign, Calendar } from "lucide-react";
+import { auditorApi, AuditorOfferData, AuditRequestData } from "./api/auditors";
+import { useAuth } from "../../hooks/useAuth";
 
 interface FormData {
   request_id: string;
@@ -29,52 +25,82 @@ interface AuditRequest {
   id: string;
   city?: string;
   street_address?: string;
+  beneficiary_id: string;
 }
 
 export const AuditorOfferForm: React.FC = () => {
+  const { user, delegatedUser } = useAuth();
+  const currentUser = delegatedUser || user;
+  const auditorId = currentUser?.id;
+
   const [formData, setFormData] = useState<FormData>({
-    request_id: '',
-    price: '',
-    duration_days: '',
-    description: ''
+    request_id: "",
+    price: "",
+    duration_days: "",
+    description: "",
   });
-  
+
   const [errors, setErrors] = useState<Record<string, string>>({});
   const queryClient = useQueryClient();
+
+  // Sprawdź czy użytkownik jest zalogowany jako audytor
+  if (!currentUser || !auditorId) {
+    return (
+      <div className="p-6">
+        <Alert
+          type="error"
+          title="Błąd autoryzacji"
+          message="Nie można załadować danych audytora. Zaloguj się ponownie."
+        />
+      </div>
+    );
+  }
+
+  if (currentUser.role !== "auditor") {
+    return (
+      <div className="p-6">
+        <Alert
+          type="error"
+          title="Brak uprawnień"
+          message="Tylko audytorzy mogą składać oferty audytu."
+        />
+      </div>
+    );
+  }
 
   const {
     data: auditRequests = [],
     isLoading: requestsLoading,
-    error: requestsError
-  } = useQuery<AuditRequest[]>({
-    queryKey: ['audit-requests'],
+    error: requestsError,
+  } = useQuery<AuditRequestData[]>({
+    queryKey: ["audit-requests"],
     queryFn: auditorApi.getAuditRequests,
   });
-
   const createOfferMutation = useMutation({
-    mutationFn: (offerData: Partial<AuditorOfferData>) => auditorApi.createAuditorOffer(offerData),
+    mutationFn: (offerData: Partial<AuditorOfferData>) =>
+      auditorApi.createAuditorOffer(offerData),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['auditor-offers'] });
+      queryClient.invalidateQueries({ queryKey: ["auditor-offers"] });
       // Reset form after successful submission
       setFormData({
-        request_id: '',
-        price: '',
-        duration_days: '',
-        description: ''
+        request_id: "",
+        price: "",
+        duration_days: "",
+        description: "",
       });
       setErrors({});
     },
     onError: (error) => {
-      console.error('Error creating offer:', error);
+      console.error("Error creating offer:", error);
       // Optionally set specific error messages based on the error
-    }
+    },
   });
 
   const handleInputChange = (field: keyof FormData, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
     // Clear error when user starts typing
     if (errors[field]) {
-      setErrors(prev => ({ ...prev, [field]: '' }));
+      setErrors((prev) => ({ ...prev, [field]: "" }));
     }
   };
 
@@ -82,17 +108,23 @@ export const AuditorOfferForm: React.FC = () => {
     const newErrors: Record<string, string> = {};
 
     if (!formData.request_id.trim()) {
-      newErrors.request_id = 'Wybierz zlecenie audytu';
+      newErrors.request_id = "Wybierz zlecenie audytu";
     }
 
     const price = Number(formData.price);
     if (!formData.price.trim() || isNaN(price) || price <= 0) {
-      newErrors.price = 'Podaj prawidłową cenę (większą od 0)';
+      newErrors.price = "Podaj prawidłową cenę (większą od 0)";
     }
 
     const duration = Number(formData.duration_days);
-    if (!formData.duration_days.trim() || isNaN(duration) || duration <= 0 || !Number.isInteger(duration)) {
-      newErrors.duration_days = 'Podaj prawidłową liczbę dni (liczba całkowita większa od 0)';
+    if (
+      !formData.duration_days.trim() ||
+      isNaN(duration) ||
+      duration <= 0 ||
+      !Number.isInteger(duration)
+    ) {
+      newErrors.duration_days =
+        "Podaj prawidłową liczbę dni (liczba całkowita większa od 0)";
     }
 
     setErrors(newErrors);
@@ -101,36 +133,46 @@ export const AuditorOfferForm: React.FC = () => {
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
       return;
     }
 
     const offerData: Partial<AuditorOfferData> = {
       request_id: formData.request_id,
+      auditor_id: auditorId, // Dodaj ID audytora
       price: Number(formData.price),
       duration_days: Number(formData.duration_days),
       description: formData.description.trim() || undefined, // Only include if not empty
-      status: 'pending'
+      status: "pending",
     };
 
+    console.log("Submitting auditor offer:", offerData); // Debug log
     createOfferMutation.mutate(offerData);
   };
 
   const handleClearForm = () => {
     setFormData({
-      request_id: '',
-      price: '',
-      duration_days: '',
-      description: ''
+      request_id: "",
+      price: "",
+      duration_days: "",
+      description: "",
     });
     setErrors({});
   };
 
+  // Filtruj audit requests - usuń te, które należą do tego audytora (jeśli mamy takie pole)
+  // lub wszystkie, jeśli audytor nie może składać ofert na swoje własne zlecenia
+  const availableRequests =
+    auditRequests?.filter(
+      (request) => request.beneficiary_id !== auditorId // Audytor nie może składać ofert na swoje zlecenia
+    ) || [];
   // Transform audit requests to options for SelectFilter
-  const requestOptions: Option[] = auditRequests.map(request => ({
+  const requestOptions: Option[] = availableRequests.map((request) => ({
     value: request.id,
-    label: `${request.city || 'Nie podano miasta'} - ${request.street_address || 'Adres do uzgodnienia'}`
+    label: `${request.city || "Nie podano miasta"} - ${
+      request.street_address || "Adres do uzgodnienia"
+    }`,
   }));
 
   if (requestsLoading) {
@@ -155,7 +197,7 @@ export const AuditorOfferForm: React.FC = () => {
     );
   }
 
-  if (auditRequests.length === 0) {
+  if (availableRequests.length === 0) {
     return (
       <div className="p-6">
         <Alert
@@ -171,7 +213,9 @@ export const AuditorOfferForm: React.FC = () => {
     <div className="p-6 space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-3xl font-bold text-slate-900">Nowa Oferta Audytu</h1>
+        <h1 className="text-3xl font-bold text-slate-900">
+          Nowa Oferta Audytu
+        </h1>
         <p className="text-slate-600 mt-1">Złóż ofertę na wykonanie audytu</p>
       </div>
 
@@ -205,7 +249,9 @@ export const AuditorOfferForm: React.FC = () => {
               <SelectFilter
                 options={requestOptions}
                 value={formData.request_id}
-                onChange={(value) => handleInputChange('request_id', value as string)}
+                onChange={(value) =>
+                  handleInputChange("request_id", value as string)
+                }
                 placeholder="Wybierz zlecenie..."
                 name="request_id"
               />
@@ -213,16 +259,12 @@ export const AuditorOfferForm: React.FC = () => {
 
             {/* Price and Duration */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <FormField
-                label="Cena (PLN)"
-                error={errors.price}
-                required
-              >
+              <FormField label="Cena (PLN)" error={errors.price} required>
                 <FormInput
                   type="number"
                   name="price"
                   value={formData.price}
-                  onChange={(e) => handleInputChange('price', e.target.value)}
+                  onChange={(e) => handleInputChange("price", e.target.value)}
                   placeholder="np. 2500"
                   min="1"
                   step="0.01"
@@ -239,7 +281,9 @@ export const AuditorOfferForm: React.FC = () => {
                   type="number"
                   name="duration_days"
                   value={formData.duration_days}
-                  onChange={(e) => handleInputChange('duration_days', e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange("duration_days", e.target.value)
+                  }
                   placeholder="np. 14"
                   min="1"
                   step="1"
@@ -249,13 +293,13 @@ export const AuditorOfferForm: React.FC = () => {
             </div>
 
             {/* Description */}
-            <FormField
-              label="Dodatkowe informacje (opcjonalne)"
-            >
+            <FormField label="Dodatkowe informacje (opcjonalne)">
               <FormTextarea
                 name="description"
                 value={formData.description}
-                onChange={(e) => handleInputChange('description', e.target.value)}
+                onChange={(e) =>
+                  handleInputChange("description", e.target.value)
+                }
                 placeholder="Opisz swoje doświadczenie, metodologię audytu, certyfikaty..."
                 rows={4}
                 maxLength={1000}
@@ -269,8 +313,7 @@ export const AuditorOfferForm: React.FC = () => {
 
             {/* Form Actions */}
             <div className="flex gap-4">
-              <Button 
-                type="submit" 
+              <Button
                 variant="primary"
                 disabled={createOfferMutation.isPending}
                 className="flex items-center gap-2"
@@ -280,11 +323,10 @@ export const AuditorOfferForm: React.FC = () => {
                 ) : (
                   <FileCheck className="w-4 h-4" />
                 )}
-                {createOfferMutation.isPending ? 'Wysyłanie...' : 'Złóż ofertę'}
+                {createOfferMutation.isPending ? "Wysyłanie..." : "Złóż ofertę"}
               </Button>
-              
-              <Button 
-                type="button" 
+
+              <Button
                 variant="outline"
                 onClick={handleClearForm}
                 disabled={createOfferMutation.isPending}

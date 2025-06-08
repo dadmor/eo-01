@@ -1,9 +1,8 @@
 // src/components/Navigation.tsx
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 import { Menu, X, User, Settings, BarChart3 } from "lucide-react";
 import { Button } from "./ui/basic/Button";
-import { Avatar } from "./ui/basic/Avatar";
 import AuthDropdown from "./AuthDropdown";
 
 const Navigation: React.FC = () => {
@@ -13,64 +12,66 @@ const Navigation: React.FC = () => {
     setIsMobileMenuOpen(!isMobileMenuOpen);
   };
 
+  // wspólna funkcja do klasy aktywnego linku
+  const linkClass = ({ isActive }: { isActive: boolean }) =>
+    isActive
+      ? "bg-slate-100 text-slate-900 rounded-lg"
+      : "text-slate-700 hover:bg-slate-50 rounded-lg";
+
   return (
     <>
       {/* Main Navigation Bar */}
-      <nav className="bg-white border-b border-slate-200 border-red-300 p-3 px-6">
+      <nav className="bg-white border-b border-slate-200 p-3 px-6">
         <div className="flex justify-between items-center h-16">
           {/* Logo/Brand */}
           <div className="flex items-center">
-            <Link to="/" className="flex items-center gap-3">
+            <NavLink to="/" className="flex items-center gap-3">
               <div className="w-8 h-8 bg-slate-900 text-white rounded-lg flex items-center justify-center">
                 <span className="font-bold text-sm">MA</span>
               </div>
               <span className="text-xl font-semibold text-slate-900">
                 Moja Aplikacja
               </span>
-            </Link>
+            </NavLink>
           </div>
 
           {/* Desktop Navigation */}
           <div className="hidden lg:flex items-center space-x-2">
-            <Link to="/beneficiary/my-requests">
+            <NavLink to="/beneficiary/my-requests" className={linkClass}>
               <Button variant="ghost" icon={<User className="w-4 h-4" />}>
                 Beneficjent
               </Button>
-            </Link>
-            <Link to="/auditor/marketplace">
+            </NavLink>
+            <NavLink to="/auditor/marketplace" className={linkClass}>
               <Button variant="ghost" icon={<User className="w-4 h-4" />}>
                 Audytor
               </Button>
-            </Link>
-            <Link to="/operator/contacts">
+            </NavLink>
+            <NavLink to="/operator/contacts" className={linkClass}>
               <Button variant="ghost" icon={<User className="w-4 h-4" />}>
                 Operator
               </Button>
-            </Link>
-            <Link to="/profile">
+            </NavLink>
+            <NavLink to="/profile" className={linkClass}>
               <Button variant="ghost" icon={<User className="w-4 h-4" />}>
                 Profil
               </Button>
-            </Link>
-
-            <Link to="/admin/users">
+            </NavLink>
+            <NavLink to="/admin/users" className={linkClass}>
               <Button variant="ghost" icon={<Settings className="w-4 h-4" />}>
                 Użytkownicy
               </Button>
-            </Link>
-
-            <Link to="/dashboard">
+            </NavLink>
+            <NavLink to="/dashboard" className={linkClass}>
               <Button variant="ghost" icon={<BarChart3 className="w-4 h-4" />}>
                 Dashboard
               </Button>
-            </Link>
+            </NavLink>
           </div>
 
           {/* Right side - Auth + Mobile Menu */}
           <div className="flex items-center gap-3">
             <AuthDropdown />
-
-            {/* Mobile menu button */}
             <div className="lg:hidden">
               <Button
                 variant="ghost"
@@ -92,32 +93,30 @@ const Navigation: React.FC = () => {
         {isMobileMenuOpen && (
           <div className="lg:hidden border-t border-slate-200 bg-white">
             <div className="px-4 py-3 space-y-2">
-              <Link
-                to="/profile"
-                className="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-700 hover:bg-slate-50 transition-colors"
+              <NavLink
+                to="/beneficiary/my-requests"
+                className={linkClass}
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 <User className="w-4 h-4" />
-                Profil
-              </Link>
-
-              <Link
+                Beneficjent
+              </NavLink>
+              <NavLink
                 to="/admin/users"
-                className="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-700 hover:bg-slate-50 transition-colors"
+                className={linkClass}
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 <Settings className="w-4 h-4" />
                 Użytkownicy
-              </Link>
-
-              <Link
+              </NavLink>
+              <NavLink
                 to="/dashboard"
-                className="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-700 hover:bg-slate-50 transition-colors"
+                className={linkClass}
                 onClick={() => setIsMobileMenuOpen(false)}
               >
                 <BarChart3 className="w-4 h-4" />
                 Dashboard
-              </Link>
+              </NavLink>
             </div>
           </div>
         )}
