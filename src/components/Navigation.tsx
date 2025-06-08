@@ -1,59 +1,116 @@
 // src/components/Navigation.tsx
-import React from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
+import { Menu, X, User, Settings, BarChart3 } from "lucide-react";
+import { Button } from "./ui/basic/Button";
+import { Avatar } from "./ui/basic/Avatar";
 import AuthDropdown from "./AuthDropdown";
 
 const Navigation: React.FC = () => {
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  const toggleMobileMenu = () => {
+    setIsMobileMenuOpen(!isMobileMenuOpen);
+  };
+
   return (
-    <div className="navbar bg-base-100 shadow-lg fixed top-0 w-full z-50">
-      <div className="navbar-start">
-        <Link to="/" className="btn btn-ghost text-xl">
-          Moja Aplikacja
-        </Link>
-      </div>
-      
-      <div className="navbar-center hidden lg:flex">
-        <ul className="menu menu-horizontal px-1">
-          <li>
-            <Link to="/profile" className="btn btn-ghost">
-              Profil
+    <>
+      {/* Main Navigation Bar */}
+      <nav className="bg-white border-b border-slate-200 border-red-300 p-3 px-6">
+        <div className="flex justify-between items-center h-16">
+          {/* Logo/Brand */}
+          <div className="flex items-center">
+            <Link to="/" className="flex items-center gap-3">
+              <div className="w-8 h-8 bg-slate-900 text-white rounded-lg flex items-center justify-center">
+                <span className="font-bold text-sm">MA</span>
+              </div>
+              <span className="text-xl font-semibold text-slate-900">
+                Moja Aplikacja
+              </span>
             </Link>
-          </li>
-          <li>
-            <Link to="/admin/users">U</Link>
-          </li>
-          <li>
-            <Link to="/dashboard" className="btn btn-ghost">
-              Dashboard
+          </div>
+
+          {/* Desktop Navigation */}
+          <div className="hidden lg:flex items-center space-x-2">
+            <Link to="/profile">
+              <Button variant="ghost" icon={<User className="w-4 h-4" />}>
+                Profil
+              </Button>
             </Link>
-          </li>
-        </ul>
-      </div>
-      
-      <div className="navbar-end">
-        <AuthDropdown />
-      </div>
-      
-      {/* Mobile menu */}
-      <div className="dropdown lg:hidden">
-        <div tabIndex={0} role="button" className="btn btn-ghost btn-circle">
-          <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 6h16M4 12h16M4 18h16"></path>
-          </svg>
+
+            <Link to="/admin/users">
+              <Button variant="ghost" icon={<Settings className="w-4 h-4" />}>
+                Użytkownicy
+              </Button>
+            </Link>
+
+            <Link to="/dashboard">
+              <Button variant="ghost" icon={<BarChart3 className="w-4 h-4" />}>
+                Dashboard
+              </Button>
+            </Link>
+          </div>
+
+          {/* Right side - Auth + Mobile Menu */}
+          <div className="flex items-center gap-3">
+            <AuthDropdown />
+
+            {/* Mobile menu button */}
+            <div className="lg:hidden">
+              <Button
+                variant="ghost"
+                onClick={toggleMobileMenu}
+                icon={
+                  isMobileMenuOpen ? (
+                    <X className="w-5 h-5" />
+                  ) : (
+                    <Menu className="w-5 h-5" />
+                  )
+                }
+                children={undefined}
+              />
+            </div>
+          </div>
         </div>
-        <ul tabIndex={0} className="menu menu-sm dropdown-content mt-3 z-[1] p-2 shadow bg-base-100 rounded-box w-52">
-          <li>
-            <Link to="/profile">Profil</Link>
-          </li>
-          <li>
-            <Link to="/admin/users">U</Link>
-          </li>
-          <li>
-            <Link to="/dashboard">Dashboard</Link>
-          </li>
-        </ul>
-      </div>
-    </div>
+
+        {/* Mobile Navigation Menu */}
+        {isMobileMenuOpen && (
+          <div className="lg:hidden border-t border-slate-200 bg-white">
+            <div className="px-4 py-3 space-y-2">
+              <Link
+                to="/profile"
+                className="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-700 hover:bg-slate-50 transition-colors"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                <User className="w-4 h-4" />
+                Profil
+              </Link>
+
+              <Link
+                to="/admin/users"
+                className="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-700 hover:bg-slate-50 transition-colors"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                <Settings className="w-4 h-4" />
+                Użytkownicy
+              </Link>
+
+              <Link
+                to="/dashboard"
+                className="flex items-center gap-3 px-3 py-2 rounded-lg text-slate-700 hover:bg-slate-50 transition-colors"
+                onClick={() => setIsMobileMenuOpen(false)}
+              >
+                <BarChart3 className="w-4 h-4" />
+                Dashboard
+              </Link>
+            </div>
+          </div>
+        )}
+      </nav>
+
+      {/* Spacer to prevent content from going under fixed navbar */}
+      <div className="h-16"></div>
+    </>
   );
 };
 

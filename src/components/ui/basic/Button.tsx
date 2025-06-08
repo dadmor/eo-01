@@ -1,7 +1,9 @@
-// Button Component
+// src/components/Button.tsx
+import React from "react";
+
 interface ButtonProps {
   children: React.ReactNode;
-  variant?: 'primary' | 'outline' | 'ghost';
+  variant?: 'primary' | 'secondary' | 'outline' | 'ghost';
   size?: 'sm' | 'md' | 'lg';
   onClick?: () => void;
   className?: string;
@@ -21,17 +23,18 @@ export const Button: React.FC<ButtonProps> = ({
   disabled = false,
 }) => {
   const baseClasses =
-    "inline-flex items-center justify-center font-medium rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2";
+    "inline-flex items-center justify-center font-medium rounded-lg transition-colors focus:outline-none";
 
   const variants = {
-    primary: "bg-slate-900 text-white hover:bg-slate-800 focus:ring-slate-500",
-    outline:
-      "border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 focus:ring-slate-500",
-    ghost: "text-slate-700 hover:bg-slate-100 focus:ring-slate-500",
+    primary: "bg-slate-900 text-white hover:bg-slate-800 focus:ring-2 focus:ring-offset-2 focus:ring-slate-500",
+    secondary: "bg-slate-100 text-slate-900 hover:bg-slate-200 focus:ring-2 focus:ring-offset-2 focus:ring-slate-500",
+    outline: "border border-slate-300 bg-white text-slate-700 hover:bg-slate-50 focus:ring-2 focus:ring-offset-2 focus:ring-slate-500",
+    ghost: "text-slate-700 hover:bg-slate-100 focus:ring-2 focus:ring-offset-2 focus:ring-slate-500",
   };
 
   const disabledVariants = {
     primary: "bg-slate-400 text-slate-300 cursor-not-allowed",
+    secondary: "bg-slate-50 text-slate-400 cursor-not-allowed",
     outline: "border border-slate-200 bg-slate-50 text-slate-400 cursor-not-allowed",
     ghost: "text-slate-400 cursor-not-allowed",
   };
@@ -44,13 +47,13 @@ export const Button: React.FC<ButtonProps> = ({
 
   const widthClass = fullWidth ? "w-full" : "";
   const iconGap = icon ? "gap-2" : "";
-  
-  const variantClasses = disabled ? disabledVariants[variant] : variants[variant];
   const focusClasses = disabled ? "" : "focus:ring-2 focus:ring-offset-2";
+
+  const variantClasses = disabled ? disabledVariants[variant] : variants[variant];
 
   return (
     <button
-      className={`${baseClasses} ${variantClasses} ${sizes[size]} ${widthClass} ${iconGap} ${focusClasses} ${className}`}
+      className={`${baseClasses} ${variantClasses} ${sizes[size]} ${widthClass} ${iconGap} ${className}`}
       onClick={disabled ? undefined : onClick}
       disabled={disabled}
     >

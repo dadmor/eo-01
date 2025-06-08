@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { User, Zap, Clock, BarChart3, Plus, FileText, Settings, Users, Database } from "lucide-react";
+import { User, Zap, Clock, BarChart3, Plus, FileText, Settings, Users, Database, Shield, Eye, UserCheck, Store } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { Button } from "@/components/ui/basic";
 
 interface UserIdentity {
   id: string;
@@ -241,41 +242,101 @@ export const Dashboard: React.FC = () => {
               </div>
               
               <div className="border-t border-slate-200 pt-6">
-                <h3 className="text-sm font-medium text-slate-700 mb-3 flex items-center gap-2">
-                  <Settings className="w-4 h-4" />
-                  Panel administratora
-                </h3>
-                <div className="flex flex-wrap gap-2">
-                  <button 
-                    className="btn btn-sm shadcn-outline flex items-center gap-2"
-                    onClick={() => handleNavigation("/admin/logs")}
-                  >
-                    <Database className="w-3 h-3" />
-                    Logi systemu
-                  </button>
-                  <button 
-                    className="btn btn-sm shadcn-outline flex items-center gap-2"
-                    onClick={() => handleNavigation("/admin/settings")}
-                  >
-                    <Settings className="w-3 h-3" />
-                    Ustawienia
-                  </button>
-                  <button 
-                    className="btn btn-sm shadcn-outline flex items-center gap-2"
-                    onClick={() => handleNavigation("/admin/users")}
-                  >
-                    <Users className="w-3 h-3" />
-                    Zarządzanie użytkownikami
-                  </button>
-                  <button 
-                    className="btn btn-sm shadcn-outline flex items-center gap-2"
-                    onClick={() => handleNavigation("/uikit/dashboard")}
-                  >
-                    <Users className="w-3 h-3" />
-                    UiKit
-                  </button>
-                </div>
-              </div>
+  <h3 className="text-sm font-medium text-slate-700 mb-3 flex items-center gap-2">
+    <Settings className="w-4 h-4" />
+    Panel ról użytkowników
+  </h3>
+  <div className="flex flex-wrap gap-2">
+    
+    {/* Operator */}
+    <Button
+      size="sm"
+      variant="outline"
+      icon={<Shield className="w-3 h-3" />}
+      onClick={() => handleNavigation("/operator/contacts")}
+    >
+      Operator
+    </Button>
+    
+    {/* Auditor */}
+    <Button
+      size="sm"
+      variant="outline"
+      icon={<Eye className="w-3 h-3" />}
+      onClick={() => handleNavigation("/auditor/marketplace")}
+    >
+      Audytor
+    </Button>
+    
+    {/* Beneficiary */}
+    <Button
+      size="sm"
+      variant="outline"
+      icon={<UserCheck className="w-3 h-3" />}
+      onClick={() => handleNavigation("/beneficiary/my-requests")}
+    >
+      Beneficjent
+    </Button>
+    
+    {/* Contractor */}
+    <Button
+      size="sm"
+      variant="outline"
+      icon={<Store className="w-3 h-3" />}
+      onClick={() => handleNavigation("/contractor/marketplace")}
+    >
+      Wykonawca
+    </Button>
+    
+  </div>
+</div>
+
+{/* Panel administratora (opcjonalnie - można zachować osobno) */}
+<div className="border-t border-slate-200 pt-6 mt-6">
+  <h3 className="text-sm font-medium text-slate-700 mb-3 flex items-center gap-2">
+    <Settings className="w-4 h-4" />
+    Panel administratora
+  </h3>
+  <div className="flex flex-wrap gap-2">
+    
+    <Button
+      size="sm"
+      variant="outline"
+      icon={<Database className="w-3 h-3" />}
+      onClick={() => handleNavigation("/admin/logs")}
+    >
+      Logi systemu
+    </Button>
+    
+    <Button
+      size="sm"
+      variant="outline"
+      icon={<Settings className="w-3 h-3" />}
+      onClick={() => handleNavigation("/admin/settings")}
+    >
+      Ustawienia
+    </Button>
+    
+    <Button
+      size="sm"
+      variant="outline"
+      icon={<Users className="w-3 h-3" />}
+      onClick={() => handleNavigation("/admin/users")}
+    >
+      Zarządzanie użytkownikami
+    </Button>
+    
+    <Button
+      size="sm"
+      variant="outline"
+      icon={<Users className="w-3 h-3" />}
+      onClick={() => handleNavigation("/uikit/dashboard")}
+    >
+      UiKit
+    </Button>
+    
+  </div>
+</div>
             </div>
           </div>
         </div>
