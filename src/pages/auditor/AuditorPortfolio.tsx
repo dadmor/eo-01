@@ -1,4 +1,3 @@
-// ------ src/pages/auditor/AuditorPortfolio.tsx ------
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { 
@@ -15,8 +14,15 @@ import {
 
 import { User, Award, FileText, Plus, Edit, Trash2 } from 'lucide-react';
 import { auditorApi, AuditorPortfolioData } from './api/auditors';
+import { useAuth } from '@/hooks/useAuth'; // Dodano import
 
 export const AuditorPortfolio: React.FC = () => {
+  const { user, delegatedUser } = useAuth(); // Dodano hook useAuth
+  
+  // Użyj delegatedUser jeśli istnieje, w przeciwnym razie user
+  const currentUser = delegatedUser || user;
+  const auditorId = currentUser?.id;
+
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<AuditorPortfolioData | null>(null);
   const [formData, setFormData] = useState({
@@ -28,13 +34,26 @@ export const AuditorPortfolio: React.FC = () => {
   
   const queryClient = useQueryClient();
 
+  // Sprawdzenie czy użytkownik jest zalogowany
+  if (!currentUser || !auditorId) {
+    return (
+      <div className="p-6">
+        <Alert
+          type="error"
+          title="Błąd"
+          message="Nie można załadować danych użytkownika. Zaloguj się ponownie."
+        />
+      </div>
+    );
+  }
+
   const {
     data: portfolioItems = [],
     isLoading,
     error,
     refetch
   } = useQuery({
-    queryKey: ['auditor-portfolios'],
+    queryKey: ['auditor-portfolios', auditorId],
     queryFn: auditorApi.getAuditorPortfolios,
   });
 
@@ -112,6 +131,7 @@ export const AuditorPortfolio: React.FC = () => {
     }
 
     const portfolioData = {
+      auditor_id: auditorId, // DODANO auditor_id
       name_or_company: formData.name_or_company.trim(),
       certificate_data: formData.certificate_data.trim(),
       description: formData.description.trim()
@@ -254,7 +274,6 @@ export const AuditorPortfolio: React.FC = () => {
 
               <div className="flex gap-4">
                 <Button 
-                  type="submit" 
                   variant="primary"
                   disabled={isPending}
                   className="flex items-center gap-2"
@@ -270,7 +289,6 @@ export const AuditorPortfolio: React.FC = () => {
                 </Button>
                 
                 <Button 
-                  type="button" 
                   variant="outline"
                   onClick={resetForm}
                 >

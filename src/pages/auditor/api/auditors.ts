@@ -26,6 +26,7 @@ export interface AuditorOfferData {
   price?: number;
   duration_days?: number;
   status?: string;
+  description?: string;  
   created_at: string;
   updated_at?: string;
   audit_requests?: AuditRequestData;

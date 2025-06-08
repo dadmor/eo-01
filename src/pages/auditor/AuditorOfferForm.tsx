@@ -76,6 +76,17 @@ export const AuditorOfferForm: React.FC = () => {
     queryKey: ["audit-requests"],
     queryFn: auditorApi.getAuditRequests,
   });
+
+  // DODANO: Pobierz istniejące oferty audytora
+  const {
+    data: existingOffers = [],
+    isLoading: offersLoading,
+    error: offersError,
+  } = useQuery({
+    queryKey: ["auditor-offers", auditorId],
+    queryFn: auditorApi.getAuditorOffers,
+  });
+
   const createOfferMutation = useMutation({
     mutationFn: (offerData: Partial<AuditorOfferData>) =>
       auditorApi.createAuditorOffer(offerData),
@@ -90,9 +101,15 @@ export const AuditorOfferForm: React.FC = () => {
       });
       setErrors({});
     },
-    onError: (error) => {
+    onError: (error: any) => {
       console.error("Error creating offer:", error);
-      // Optionally set specific error messages based on the error
+      
+      // DODANO: Sprawdź czy błąd dotyczy duplikatu
+      if (error?.code === '23505' || error?.message?.includes('duplicate key')) {
+        setErrors({
+          request_id: "Już złożyłeś ofertę na to zlecenie. Możesz ją edytować w sekcji 'Moje Oferty'."
+        });
+      }
     },
   });
 
@@ -109,6 +126,15 @@ export const AuditorOfferForm: React.FC = () => {
 
     if (!formData.request_id.trim()) {
       newErrors.request_id = "Wybierz zlecenie audytu";
+    } else {
+      // DODANO: Sprawdź czy audytor już złożył ofertę na to zlecenie
+      const hasExistingOffer = existingOffers.some(
+        (offer) => offer.request_id === formData.request_id && offer.auditor_id === auditorId
+      );
+      
+      if (hasExistingOffer) {
+        newErrors.request_id = "Już złożyłeś ofertę na to zlecenie. Możesz ją edytować w sekcji 'Moje Oferty'.";
+      }
     }
 
     const price = Number(formData.price);
@@ -140,14 +166,14 @@ export const AuditorOfferForm: React.FC = () => {
 
     const offerData: Partial<AuditorOfferData> = {
       request_id: formData.request_id,
-      auditor_id: auditorId, // Dodaj ID audytora
+      auditor_id: auditorId,
       price: Number(formData.price),
       duration_days: Number(formData.duration_days),
-      description: formData.description.trim() || undefined, // Only include if not empty
+      description: formData.description.trim() || undefined,
       status: "pending",
     };
 
-    console.log("Submitting auditor offer:", offerData); // Debug log
+    console.log("Submitting auditor offer:", offerData);
     createOfferMutation.mutate(offerData);
   };
 
@@ -161,12 +187,17 @@ export const AuditorOfferForm: React.FC = () => {
     setErrors({});
   };
 
-  // Filtruj audit requests - usuń te, które należą do tego audytora (jeśli mamy takie pole)
-  // lub wszystkie, jeśli audytor nie może składać ofert na swoje własne zlecenia
-  const availableRequests =
-    auditRequests?.filter(
-      (request) => request.beneficiary_id !== auditorId // Audytor nie może składać ofert na swoje zlecenia
-    ) || [];
+  // ZMIENIONO: Filtruj zlecenia, wykluczając te na które audytor już złożył ofertę
+  const offeredRequestIds = existingOffers
+    .filter(offer => offer.auditor_id === auditorId)
+    .map(offer => offer.request_id);
+
+  const availableRequests = auditRequests?.filter(
+    (request) => 
+      request.beneficiary_id !== auditorId && // Audytor nie może składać ofert na swoje zlecenia
+      !offeredRequestIds.includes(request.id) // Wykluczamy zlecenia na które już złożył ofertę
+  ) || [];
+
   // Transform audit requests to options for SelectFilter
   const requestOptions: Option[] = availableRequests.map((request) => ({
     value: request.id,
@@ -175,7 +206,10 @@ export const AuditorOfferForm: React.FC = () => {
     }`,
   }));
 
-  if (requestsLoading) {
+  const isLoading = requestsLoading || offersLoading;
+  const hasError = requestsError || offersError;
+
+  if (isLoading) {
     return (
       <div className="p-6">
         <div className="flex items-center justify-center min-h-96">
@@ -185,13 +219,13 @@ export const AuditorOfferForm: React.FC = () => {
     );
   }
 
-  if (requestsError) {
+  if (hasError) {
     return (
       <div className="p-6">
         <Alert
           type="error"
           title="Błąd ładowania"
-          message="Nie udało się załadować zleceń audytu. Spróbuj odświeżyć stronę."
+          message="Nie udało się załadować danych. Spróbuj odświeżyć stronę."
         />
       </div>
     );
@@ -203,7 +237,7 @@ export const AuditorOfferForm: React.FC = () => {
         <Alert
           type="info"
           title="Brak dostępnych zleceń"
-          message="Obecnie nie ma dostępnych zleceń audytu do złożenia oferty."
+          message="Obecnie nie ma dostępnych zleceń audytu do złożenia oferty. Sprawdź sekcję 'Moje Oferty' aby zobaczyć już złożone oferty."
         />
       </div>
     );
@@ -220,7 +254,7 @@ export const AuditorOfferForm: React.FC = () => {
       </div>
 
       {/* Error Alert */}
-      {createOfferMutation.isError && (
+      {createOfferMutation.isError && !errors.request_id && (
         <Alert
           type="error"
           title="Błąd"
