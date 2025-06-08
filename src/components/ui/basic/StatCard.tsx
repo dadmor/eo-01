@@ -1,5 +1,5 @@
 // src/components/StatCard.tsx
-import React from "react";
+
 import { Card } from "./Card";
 
 interface StatCardProps {

@@ -3,10 +3,11 @@ import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { 
   Card, 
-  Button, 
+
   LoadingSpinner, 
   Alert,
   StatCard,
+  Badge,
 
 } from '../../components/ui/basic';
 import { 
@@ -176,7 +177,7 @@ export const OperatorModeration: React.FC = () => {
                     <h3 className="text-lg font-semibold text-slate-900">
                       {actionLabels[log.action as keyof typeof actionLabels] || log.action}
                     </h3>
-                    <Badge color="blue" variant="soft">
+                    <Badge variant="secondary">
                       {tableLabels[log.target_table as keyof typeof tableLabels] || log.target_table}
                     </Badge>
                   </div>

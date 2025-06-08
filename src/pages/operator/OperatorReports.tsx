@@ -181,7 +181,8 @@ export const OperatorReports: React.FC = () => {
             title="Oferty audytorów"
             value={stats.auditorOffersCount}
             subtitle="złożonych"
-            color="orange"
+            color="yellow"
+
           />
         </div>
       )}

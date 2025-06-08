@@ -26,11 +26,11 @@ const Navigation: React.FC = () => {
           {/* Logo/Brand */}
           <div className="flex items-center">
             <NavLink to="/" className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-slate-900 text-white rounded-lg flex items-center justify-center">
+              <div className="min-w-8 w-8 h-8 bg-slate-900 text-white rounded-lg flex items-center justify-center">
                 <span className="font-bold text-sm">MA</span>
               </div>
               <span className="text-xl font-semibold text-slate-900">
-                Moja Aplikacja
+                eOperator
               </span>
             </NavLink>
           </div>

@@ -1,0 +1,4 @@
+import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
+import { Search, X } from 'lucide-react';
+const SearchFilter = ({ value, onChange, placeholder = 'Szukaj...', clearable = true, name, className = '' }) => (_jsxs("div", { className: `relative ${className}`, children: [_jsx(Search, { className: "absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" }), _jsx("input", { type: "text", name: name, value: value, onChange: (e) => onChange?.(e.target.value), placeholder: placeholder, className: "pl-10 pr-10 py-2 border border-slate-300 rounded-md focus:outline-none focus:ring-2 focus:ring-slate-500 focus:border-transparent w-full" }), clearable && value && (_jsx("button", { type: "button", onClick: () => onChange?.(""), className: "absolute right-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400 hover:text-slate-600", children: _jsx(X, { className: "w-4 h-4" }) }))] }));
+export default SearchFilter;

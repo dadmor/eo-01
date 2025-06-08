@@ -1,0 +1,19 @@
+import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
+import { ArrowUpDown, MoreHorizontal } from 'lucide-react';
+import { Button } from '../basic';
+const Table = ({ columns, data, onSort, sortColumn, sortDirection, selected = [], onSelect, loading = false, }) => {
+    if (loading) {
+        return (_jsxs("div", { className: "border border-slate-200 rounded-lg overflow-hidden", children: [_jsx("div", { className: "bg-slate-50 px-6 py-3 border-b border-slate-200", children: _jsx("div", { className: "flex items-center space-x-4", children: columns.map((_, i) => (_jsx("div", { className: "h-4 bg-slate-200 rounded animate-pulse flex-1" }, i))) }) }), [...Array(5)].map((_, i) => (_jsx("div", { className: "px-6 py-4 border-b border-slate-200 last:border-b-0", children: _jsx("div", { className: "flex items-center space-x-4", children: columns.map((_, j) => (_jsx("div", { className: "h-4 bg-slate-100 rounded animate-pulse flex-1" }, j))) }) }, i)))] }));
+    }
+    return (_jsx("div", { className: "border border-slate-200 rounded-lg overflow-hidden", children: _jsxs("table", { className: "w-full", children: [_jsx("thead", { className: "bg-slate-50", children: _jsxs("tr", { children: [onSelect && (_jsx("th", { className: "w-12 px-6 py-3 text-left", children: _jsx("input", { type: "checkbox", checked: selected.length === data.length && data.length > 0, onChange: (e) => onSelect(e.target.checked ? data.map((item) => item.id) : []), className: "rounded border-slate-300 text-slate-900 focus:ring-slate-500" }) })), columns.map((column) => (_jsx("th", { className: `px-6 py-3 text-left text-xs font-medium text-slate-500 uppercase tracking-wider ${column.width || ''}`, children: column.sortable ? (_jsxs("button", { onClick: () => onSort(column.key), className: "flex items-center gap-1 hover:text-slate-700", children: [column.label, _jsx(ArrowUpDown, { className: "w-3 h-3" })] })) : (column.label) }, column.key))), _jsx("th", { className: "w-16 px-6 py-3" })] }) }), _jsx("tbody", { className: "bg-white divide-y divide-slate-200", children: data.map((row) => (_jsxs("tr", { className: "hover:bg-slate-50", children: [onSelect && (_jsx("td", { className: "px-6 py-4", children: _jsx("input", { type: "checkbox", checked: selected.includes(row.id), onChange: (e) => {
+                                        if (e.target.checked) {
+                                            onSelect([...selected, row.id]);
+                                        }
+                                        else {
+                                            onSelect(selected.filter((id) => id !== row.id));
+                                        }
+                                    }, className: "rounded border-slate-300 text-slate-900 focus:ring-slate-500" }) })), columns.map((column) => (_jsx("td", { className: "px-6 py-4 text-sm", children: column.key === 'status' ? (_jsx("span", { className: `inline-flex px-2 py-1 text-xs font-semibold rounded-full ${row[column.key] === 'active'
+                                        ? 'bg-green-100 text-green-800'
+                                        : 'bg-red-100 text-red-800'}`, children: row[column.key] })) : column.key === 'name' ? (_jsxs("div", { className: "flex items-center gap-3", children: [_jsx("div", { className: "w-8 h-8 bg-slate-900 text-white rounded-full flex items-center justify-center text-xs font-semibold", children: String(row.name).charAt(0) }), _jsx("span", { className: "font-medium text-slate-900", children: row[column.key] })] })) : (_jsx("span", { className: "text-slate-900", children: row[column.key] })) }, column.key))), _jsx("td", { className: "px-6 py-4 text-right", children: _jsx(Button, { variant: "outline", size: "sm", children: _jsx(MoreHorizontal, { className: "w-4 h-4" }) }) })] }, row.id))) })] }) }));
+};
+export default Table;
