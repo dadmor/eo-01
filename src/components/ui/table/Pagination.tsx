@@ -1,7 +1,6 @@
 // src/components/ui/table/Pagination.tsx
-import React from 'react';
-import { Button } from '../basic';
-
+import React from "react";
+import { Button } from "../basic";
 
 export interface PaginationProps {
   currentPage: number;
@@ -33,7 +32,9 @@ const Pagination: React.FC<PaginationProps> = ({
           className="border border-slate-300 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-slate-500"
         >
           {[5, 10, 25, 50].map((n) => (
-            <option key={n} value={n}>{n}</option>
+            <option key={n} value={n}>
+              {n}
+            </option>
           ))}
         </select>
         <span>z {totalItems} wyników</span>
@@ -63,7 +64,7 @@ const Pagination: React.FC<PaginationProps> = ({
               return (
                 <Button
                   key={page}
-                  variant={page === currentPage ? 'primary' : 'outline'}
+                  variant={page === currentPage ? "primary" : "outline"}
                   size="sm"
                   onClick={() => onPageChange(page)}
                 >
@@ -74,7 +75,9 @@ const Pagination: React.FC<PaginationProps> = ({
 
             if (page === currentPage - 2 || page === currentPage + 2) {
               return (
-                <span key={page} className="px-2 text-slate-400">...</span>
+                <span key={page} className="px-2 text-slate-400">
+                  ...
+                </span>
               );
             }
 
