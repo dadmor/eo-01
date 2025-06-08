@@ -3,7 +3,11 @@ import React, { FormEvent, useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useSimpleForm } from "@/hooks/useSimpleForm";
 import { useAuth } from "@/hooks/useAuth";
-import { Eye, EyeOff, Mail, Lock, AlertCircle, CheckCircle } from "lucide-react";
+import { Eye, EyeOff, Mail, Lock, CheckCircle } from "lucide-react";
+import { Card } from "@/components/ui/basic/Card";
+import { Button } from "@/components/ui/basic/Button";
+import { Alert } from "@/components/ui/basic/Alert";
+import { LoadingSpinner } from "@/components/ui/basic/LoadingSpinner";
 
 export const Login: React.FC = () => {
   const { getFormData } = useSimpleForm();
@@ -34,7 +38,6 @@ export const Login: React.FC = () => {
 
     const { email: rawEmail, password: rawPassword } = getFormData(e.currentTarget);
 
-    // Wyciągamy pierwszy element, jeśli to tablica
     const email = Array.isArray(rawEmail) ? rawEmail[0] : rawEmail;
     const password = Array.isArray(rawPassword) ? rawPassword[0] : rawPassword;
 
@@ -77,7 +80,7 @@ export const Login: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
-        <div className="bg-white rounded-2xl shadow-xl p-8">
+        <Card className="shadow-xl p-8">
           {/* Header */}
           <div className="text-center mb-8">
             <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -89,33 +92,36 @@ export const Login: React.FC = () => {
 
           {/* Error Alert */}
           {error && (
-            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-              <div className="flex items-start">
-                <AlertCircle className="w-5 h-5 text-red-500 mt-0.5 mr-3 flex-shrink-0" />
-                <div className="flex-1">
-                  <p className="text-red-800 text-sm">{error}</p>
-                  {showResend && (
-                    <div className="mt-3 space-y-2">
-                      {resendSuccess && (
-                        <div className="flex items-center p-3 bg-green-50 border border-green-200 rounded">
-                          <CheckCircle className="w-4 h-4 text-green-500 mr-2" />
-                          <span className="text-green-800 text-sm">
-                            Mail potwierdzający został wysłany ponownie.
-                          </span>
-                        </div>
-                      )}
-                      <button
-                        type="button"
-                        onClick={handleResend}
-                        disabled={resendLoading}
-                        className="w-full px-4 py-2 text-sm font-medium text-blue-700 bg-blue-50 border border-blue-300 rounded-lg hover:bg-blue-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        {resendLoading ? "Wysyłanie..." : "Wyślij ponownie e-mail potwierdzający"}
-                      </button>
-                    </div>
+            <div className="mb-6">
+              <Alert 
+                type="error" 
+                title="Błąd logowania" 
+                message={error}
+              />
+              {showResend && (
+                <div className="mt-4 space-y-3">
+                  {resendSuccess && (
+                    <Card className="border-green-200 bg-green-50 p-3">
+                      <div className="flex items-center">
+                        <CheckCircle className="w-4 h-4 text-green-500 mr-2" />
+                        <span className="text-green-800 text-sm">
+                          Mail potwierdzający został wysłany ponownie.
+                        </span>
+                      </div>
+                    </Card>
                   )}
+                  <Button
+                    variant="outline"
+                    size="md"
+                    onClick={handleResend}
+                    disabled={resendLoading}
+                    fullWidth
+                    icon={resendLoading ? <LoadingSpinner size="sm" /> : undefined}
+                  >
+                    {resendLoading ? "Wysyłanie..." : "Wyślij ponownie e-mail potwierdzający"}
+                  </Button>
                 </div>
-              </div>
+              )}
             </div>
           )}
 
@@ -175,20 +181,16 @@ export const Login: React.FC = () => {
             </div>
 
             {/* Submit Button */}
-            <button
-              type="submit"
+            <Button
+              variant="primary"
+              size="lg"
               disabled={authLoading || loading}
-              className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              fullWidth
+              onClick={() => {}} // Form submission handled by onSubmit
+              icon={loading ? <LoadingSpinner size="sm" /> : undefined}
             >
-              {loading ? (
-                <div className="flex items-center justify-center">
-                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-                  Logowanie...
-                </div>
-              ) : (
-                "Zaloguj się"
-              )}
-            </button>
+              {loading ? "Logowanie..." : "Zaloguj się"}
+            </Button>
           </form>
 
           {/* Footer */}
@@ -203,7 +205,7 @@ export const Login: React.FC = () => {
               </Link>
             </p>
           </div>
-        </div>
+        </Card>
       </div>
     </div>
   );

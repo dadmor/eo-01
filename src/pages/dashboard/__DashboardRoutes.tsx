@@ -5,14 +5,7 @@ import { Dashboard } from "./Dashboard";
 
 export const DashboardRoutes = () => (
   <>
-    <Route
-      path="/"
-      element={
-        <ProtectedRoute>
-          <Dashboard />
-        </ProtectedRoute>
-      }
-    />
+    
     <Route
       path="/dashboard"
       element={

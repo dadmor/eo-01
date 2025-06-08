@@ -14,9 +14,7 @@
   import { AuditorRoutes } from "./pages/auditor";
   import { BeneficiaryRoutes } from "./pages/beneficiary";
 
-  const queryClient = new QueryClient({
-    /* ... */
-  });
+  const queryClient = new QueryClient({});
 
   function App() {
     return (

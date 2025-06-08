@@ -3,7 +3,11 @@ import React, { useState, FormEvent } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useSimpleForm } from '@/hooks/useSimpleForm';
 import { supabase } from '@/utility';
-import { Eye, EyeOff, Mail, Lock, AlertCircle, CheckCircle, UserPlus, Users } from "lucide-react";
+import { Eye, EyeOff, Mail, Lock, UserPlus, Users, CheckCircle } from "lucide-react";
+import { Card } from "@/components/ui/basic/Card";
+import { Button } from "@/components/ui/basic/Button";
+import { Alert } from "@/components/ui/basic/Alert";
+import { LoadingSpinner } from "@/components/ui/basic/LoadingSpinner";
 
 export const Register: React.FC = () => {
   const { getFormData } = useSimpleForm();
@@ -19,7 +23,13 @@ export const Register: React.FC = () => {
     setError(null);
     setSuccess(null);
 
-    const { email, password, confirmPassword, role } = getFormData(e.currentTarget);
+    const { email: rawEmail, password: rawPassword, confirmPassword: rawConfirmPassword, role: rawRole } = getFormData(e.currentTarget);
+    
+    // Wyciągamy pierwszy element, jeśli to tablica
+    const email = Array.isArray(rawEmail) ? rawEmail[0] : rawEmail;
+    const password = Array.isArray(rawPassword) ? rawPassword[0] : rawPassword;
+    const confirmPassword = Array.isArray(rawConfirmPassword) ? rawConfirmPassword[0] : rawConfirmPassword;
+    const role = Array.isArray(rawRole) ? rawRole[0] : rawRole;
     
     if (password !== confirmPassword) {
       setError('Hasła muszą być takie same');
@@ -58,21 +68,28 @@ export const Register: React.FC = () => {
     return (
       <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 flex items-center justify-center p-4">
         <div className="w-full max-w-md">
-          <div className="bg-white rounded-2xl shadow-xl p-8 text-center">
+          <Card className="shadow-xl p-8 text-center">
             <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <CheckCircle className="w-8 h-8 text-green-600" />
             </div>
             <h1 className="text-2xl font-bold text-gray-900 mb-4">Rejestracja zakończona!</h1>
-            <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
-              <p className="text-green-800 text-sm">{success}</p>
-            </div>
-            <button
+            
+            <Alert 
+              type="success"
+              title="Sukces"
+              message={success}
+              className="mb-6"
+            />
+            
+            <Button
+              variant="primary"
+              size="lg"
               onClick={() => navigate('/login')}
-              className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
+              fullWidth
             >
               Przejdź do logowania
-            </button>
-          </div>
+            </Button>
+          </Card>
         </div>
       </div>
     );
@@ -81,7 +98,7 @@ export const Register: React.FC = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
-        <div className="bg-white rounded-2xl shadow-xl p-8">
+        <Card className="shadow-xl p-8">
           {/* Header */}
           <div className="text-center mb-8">
             <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -93,11 +110,12 @@ export const Register: React.FC = () => {
 
           {/* Error Alert */}
           {error && (
-            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-              <div className="flex items-start">
-                <AlertCircle className="w-5 h-5 text-red-500 mt-0.5 mr-3 flex-shrink-0" />
-                <p className="text-red-800 text-sm">{error}</p>
-              </div>
+            <div className="mb-6">
+              <Alert 
+                type="error" 
+                title="Błąd rejestracji" 
+                message={error}
+              />
             </div>
           )}
 
@@ -221,20 +239,16 @@ export const Register: React.FC = () => {
             </div>
 
             {/* Submit Button */}
-            <button
-              type="submit"
+            <Button
+              variant="primary"
+              size="lg"
               disabled={loading}
-              className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              fullWidth
+              onClick={() => {}} // Form submission handled by onSubmit
+              icon={loading ? <LoadingSpinner size="sm" /> : undefined}
             >
-              {loading ? (
-                <div className="flex items-center justify-center">
-                  <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
-                  Tworzenie konta...
-                </div>
-              ) : (
-                "Utwórz konto"
-              )}
-            </button>
+              {loading ? "Tworzenie konta..." : "Utwórz konto"}
+            </Button>
           </form>
 
           {/* Footer */}
@@ -249,7 +263,7 @@ export const Register: React.FC = () => {
               </Link>
             </p>
           </div>
-        </div>
+        </Card>
       </div>
     </div>
   );
