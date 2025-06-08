@@ -1,6 +1,6 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes } from "react-router-dom";
-import Navigation from "./components/Navigation";
+
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 import { AuthRoutes } from "@/pages/auth";
 import { DashboardRoutes } from "@/pages/dashboard";
@@ -9,9 +9,10 @@ import { SharedRoutes } from "@/pages/shared";
 import { AuthProvider } from "@/hooks/useAuth";
 import ThemeSwitcher from "./daisyModule/ThemeSwitcher";
 import { ContractorRoutes } from "./pages/contractor/__ContractorRoutes";
-import { SidebarLayout } from "./components/layout/SidebarLayout";
+
 import { OperatorRoutes } from "./pages/operator";
 import { AuditorRoutes } from "./pages/auditor";
+import { BeneficiaryRoutes } from "./pages/beneficiary";
 
 const queryClient = new QueryClient({
   /* ... */
@@ -28,6 +29,8 @@ function App() {
               {DashboardRoutes()}
               {AdminRoutes()}
               {SharedRoutes()}
+
+              {BeneficiaryRoutes()}
 
               {OperatorRoutes()}
 

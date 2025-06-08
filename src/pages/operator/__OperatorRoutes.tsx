@@ -15,7 +15,7 @@ export const OperatorRoutes = () => (
       path="/operator/contacts"
       element={
         <SidebarLayout userRole="operator">
-            <Navigation />
+          <Navigation />
           <OperatorContacts />
         </SidebarLayout>
       }
@@ -24,7 +24,7 @@ export const OperatorRoutes = () => (
       path="/operator/moderation"
       element={
         <SidebarLayout userRole="operator">
-            <Navigation />
+          <Navigation />
           <OperatorModeration />
         </SidebarLayout>
       }
@@ -33,7 +33,7 @@ export const OperatorRoutes = () => (
       path="/operator/reports"
       element={
         <SidebarLayout userRole="operator">
-            <Navigation />
+          <Navigation />
           <OperatorReports />
         </SidebarLayout>
       }
@@ -42,7 +42,7 @@ export const OperatorRoutes = () => (
       path="/operator/requests"
       element={
         <SidebarLayout userRole="operator">
-            <Navigation />
+          <Navigation />
           <OperatorRequests />
         </SidebarLayout>
       }

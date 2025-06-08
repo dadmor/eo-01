@@ -32,6 +32,21 @@ const Navigation: React.FC = () => {
 
           {/* Desktop Navigation */}
           <div className="hidden lg:flex items-center space-x-2">
+            <Link to="/beneficiary/my-requests">
+              <Button variant="ghost" icon={<User className="w-4 h-4" />}>
+                Beneficjent
+              </Button>
+            </Link>
+            <Link to="/auditor/marketplace">
+              <Button variant="ghost" icon={<User className="w-4 h-4" />}>
+                Audytor
+              </Button>
+            </Link>
+            <Link to="/operator/contacts">
+              <Button variant="ghost" icon={<User className="w-4 h-4" />}>
+                Operator
+              </Button>
+            </Link>
             <Link to="/profile">
               <Button variant="ghost" icon={<User className="w-4 h-4" />}>
                 Profil

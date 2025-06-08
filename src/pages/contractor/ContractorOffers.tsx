@@ -1,196 +1,116 @@
 // src/pages/contractor/ContractorOffers.tsx
+
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
-import { 
-  Card, 
-  Button, 
-  LoadingSpinner, 
+import { useNavigate } from 'react-router-dom';
+import {
+  Container,
+  Section,
+  Hero,
+  Card,
+  Button,
+  StatCard,
   Alert,
-  StatCard 
-} from '../../components/ui/basic';
-import Table, { Column } from '../../components/ui/table/Table';
-import Pagination from '../../components/ui/table/Pagination';
-
+  LoadingState
+} from '@/components/ui/basic';
+import Table, { Column } from '@/components/ui/table/Table';
+import Pagination from '@/components/ui/table/Pagination';
 import { FileText, Clock, CheckCircle, XCircle, Plus } from 'lucide-react';
-import { contractorApi } from './api/contractors';
+import { contractorApi, ContractorOfferData } from './api/contractors';
 
 export const ContractorOffers: React.FC = () => {
-  const [currentPage, setCurrentPage] = useState(1);
-  const [itemsPerPage, setItemsPerPage] = useState(10);
-  const [sortColumn, setSortColumn] = useState<string>('created_at');
-  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
+  const navigate = useNavigate();
+  const [page, setPage] = useState(1);
+  const [perPage, setPerPage] = useState(10);
+  const [sortCol, setSortCol] = useState<keyof ContractorOfferData>('created_at');
+  const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
 
-  // TODO: Get contractor ID from auth context
   const contractorId = 'current-contractor-id';
 
-  const {
-    data: offers = [],
-    isLoading,
-    error,
-    refetch
-  } = useQuery({
+  const { data: offers = [], isLoading, error, refetch } = useQuery<ContractorOfferData[]>({
     queryKey: ['contractor-offers', contractorId],
     queryFn: () => contractorApi.getContractorOffers(contractorId),
   });
 
-  const handleSort = (key: string) => {
-    if (sortColumn === key) {
-      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
-    } else {
-      setSortColumn(key);
-      setSortDirection('asc');
-    }
-  };
+  if (isLoading) {
+    return <LoadingState size="lg" />;
+  }
+  if (error) {
+    return (
+      <Container>
+        <Section>
+          <Alert type="error" title="Błąd" message="Nie udało się załadować ofert." onRetry={() => refetch()} />
+        </Section>
+      </Container>
+    );
+  }
 
-  const sortedOffers = [...offers].sort((a, b) => {
-    const aValue = a[sortColumn as keyof ContractorOfferData];
-    const bValue = b[sortColumn as keyof ContractorOfferData];
-    
-    if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1;
-    if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1;
+  const sorted = [...offers].sort((a, b) => {
+    const av = a[sortCol], bv = b[sortCol];
+    if (av < bv) return sortDir === 'asc' ? -1 : 1;
+    if (av > bv) return sortDir === 'asc' ? 1 : -1;
     return 0;
   });
-
-  const paginatedOffers = sortedOffers.slice(
-    (currentPage - 1) * itemsPerPage,
-    currentPage * itemsPerPage
-  );
-
-  const totalPages = Math.ceil(offers.length / itemsPerPage);
-
-  const columns: Column[] = [
-    {
-      key: 'id',
-      label: 'ID Oferty',
-      width: 'w-32',
-      sortable: true,
-    },
-    {
-      key: 'price',
-      label: 'Cena',
-      sortable: true,
-    },
-    {
-      key: 'scope',
-      label: 'Zakres',
-      sortable: false,
-    },
-    {
-      key: 'status',
-      label: 'Status',
-      sortable: true,
-    },
-    {
-      key: 'created_at',
-      label: 'Data utworzenia',
-      sortable: true,
-    },
-  ];
-
-  const tableData = paginatedOffers.map(offer => ({
-    id: offer.id,
-    price: `${offer.price.toLocaleString('pl')} zł`,
-    scope: offer.scope,
-    status: offer.status,
-    created_at: new Date(offer.created_at).toLocaleDateString('pl'),
-  }));
-
-  const statusCounts = {
+  const paged = sorted.slice((page - 1) * perPage, page * perPage);
+  const totalPages = Math.ceil(offers.length / perPage);
+  const counts = {
     pending: offers.filter(o => o.status === 'pending').length,
     accepted: offers.filter(o => o.status === 'accepted').length,
     rejected: offers.filter(o => o.status === 'rejected').length,
   };
 
-  if (isLoading) {
-    return (
-      <div className="p-6">
-        <div className="flex items-center justify-center min-h-96">
-          <LoadingSpinner size="lg" />
-        </div>
-      </div>
-    );
-  }
+  const columns: Column[] = [
+    { key: 'id', label: 'ID', sortable: true, width: 'w-24' },
+    { key: 'price', label: 'Cena', sortable: true },
+    { key: 'status', label: 'Status', sortable: true },
+    { key: 'created_at', label: 'Data', sortable: true },
+  ];
 
-  if (error) {
-    return (
-      <div className="p-6">
-        <Alert
-          type="error"
-          title="Błąd ładowania"
-          message="Nie udało się załadować Twoich ofert"
-          onRetry={() => refetch()}
-        />
-      </div>
-    );
-  }
+  const tableData = paged.map(o => ({
+    id: o.id,
+    price: `${o.price.toLocaleString('pl')} zł`,
+    status: o.status,
+    created_at: new Date(o.created_at).toLocaleDateString('pl'),
+  }));
 
   return (
-    <div className="p-6 space-y-6">
-      {/* Header */}
-      <div className="flex justify-between items-center">
-        <div>
-          <h1 className="text-3xl font-bold text-slate-900">Moje Oferty</h1>
-          <p className="text-slate-600 mt-1">Zarządzaj swoimi ofertami i śledź ich status</p>
+    <Container>
+      <Hero title="Moje Oferty" subtitle="Zarządzaj swoimi ofertami" />
+      <Section>
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+          <StatCard icon={<FileText />} title="Wszystkie" value={offers.length} />
+          <StatCard icon={<Clock />} title="Oczekujące" value={counts.pending} color="yellow" />
+          <StatCard icon={<CheckCircle />} title="Zaakceptowane" value={counts.accepted} color="green" />
+          <StatCard icon={<XCircle />} title="Odrzucone" value={counts.rejected} color="red" />
         </div>
-        <Button variant="primary" icon={<Plus className="w-4 h-4" />}>
-          Nowa oferta
-        </Button>
-      </div>
-
-      {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <StatCard
-          icon={<FileText className="w-5 h-5" />}
-          title="Wszystkie oferty"
-          value={offers.length}
-          subtitle="łącznie złożonych"
-          color="blue"
-        />
-        <StatCard
-          icon={<Clock className="w-5 h-5" />}
-          title="Oczekujące"
-          value={statusCounts.pending}
-          subtitle="na odpowiedź"
-          color="yellow"
-        />
-        <StatCard
-          icon={<CheckCircle className="w-5 h-5" />}
-          title="Zaakceptowane"
-          value={statusCounts.accepted}
-          subtitle="do realizacji"
-          color="green"
-        />
-        <StatCard
-          icon={<XCircle className="w-5 h-5" />}
-          title="Odrzucone"
-          value={statusCounts.rejected}
-          subtitle="bez realizacji"
-          color="red"
-        />
-      </div>
-
-      {/* Table */}
-      <Card>
-        <div className="p-6">
-          <h2 className="text-lg font-semibold text-slate-900 mb-4">Lista ofert</h2>
+      </Section>
+      <Section>
+        <Card>
+          <div className="flex justify-end mb-4">
+            <Button variant="primary" icon={<Plus />} onClick={() => navigate('/contractor/offersform')}>
+              Nowa oferta
+            </Button>
+          </div>
           <Table
             columns={columns}
             data={tableData}
-            onSort={handleSort}
-            sortColumn={sortColumn}
-            sortDirection={sortDirection}
-            loading={isLoading}
+            sortColumn={sortCol}
+            sortDirection={sortDir}
+            onSort={key => {
+              if (key === sortCol) setSortDir(d => d === 'asc' ? 'desc' : 'asc');
+              else { setSortCol(key as any); setSortDir('asc'); }
+            }}
           />
           <Pagination
-            currentPage={currentPage}
+            currentPage={page}
             totalPages={totalPages}
             totalItems={offers.length}
-            itemsPerPage={itemsPerPage}
-            onPageChange={setCurrentPage}
-            onItemsPerPageChange={setItemsPerPage}
+            itemsPerPage={perPage}
+            onPageChange={setPage}
+            onItemsPerPageChange={setPerPage}
           />
-        </div>
-      </Card>
-    </div>
+        </Card>
+      </Section>
+    </Container>
   );
 };

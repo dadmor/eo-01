@@ -1,8 +1,9 @@
-import { useCreate } from "@pankod/refine-core";
+import { useQuery } from "@tanstack/react-query";
+
 
 export const OperatorContact = () => {
-  const { data } = useQuery({ resource: "operator_contacts" });
-  console.log("Contacts:", data);
+
+
   const { mutate } = useCreate();
   return (
     <div className="hero">
@@ -16,3 +17,7 @@ export const OperatorContact = () => {
     </div>
   );
 };
+function useCreate(): { mutate: any; } {
+  throw new Error("Function not implemented.");
+}
+

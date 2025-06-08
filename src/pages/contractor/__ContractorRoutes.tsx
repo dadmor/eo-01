@@ -7,6 +7,8 @@ import { ContractorOfferForm } from "./ContractorOfferForm";
 
 import { ContractorPortfolio } from "./ContractorPortfolio";
 import { ContractorOffers } from ".";
+import { SidebarLayout } from "@/components/layout/SidebarLayout";
+import Navigation from "@/components/Navigation";
 
 export const ContractorRoutes = () => (
   <>
@@ -14,7 +16,10 @@ export const ContractorRoutes = () => (
       path="/contractor/marketplace"
       element={
         <ProtectedRoute>
-          <ContractorMarketplace />
+          <SidebarLayout userRole="contractor">
+            <Navigation />
+            <ContractorMarketplace />
+          </SidebarLayout>
         </ProtectedRoute>
       }
     />
@@ -22,7 +27,10 @@ export const ContractorRoutes = () => (
       path="/contractor/offersform"
       element={
         <ProtectedRoute>
-          <ContractorOfferForm />
+          <SidebarLayout userRole="contractor">
+            <Navigation />
+            <ContractorOfferForm />
+          </SidebarLayout>
         </ProtectedRoute>
       }
     />
@@ -30,15 +38,22 @@ export const ContractorRoutes = () => (
       path="/contractor/offers"
       element={
         <ProtectedRoute>
-          <ContractorOffers />
+          <SidebarLayout userRole="contractor">
+            <Navigation />
+            <ContractorOffers />
+          </SidebarLayout>
         </ProtectedRoute>
       }
     />
-     <Route
+    <Route
       path="/contractor/portfolio"
       element={
+     
         <ProtectedRoute>
-          <ContractorPortfolio />
+          <SidebarLayout userRole="contractor">
+            <Navigation />
+            <ContractorPortfolio />
+          </SidebarLayout>
         </ProtectedRoute>
       }
     />

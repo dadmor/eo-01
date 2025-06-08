@@ -1,4 +1,5 @@
 // src/pages/contractor/api/contractors.ts
+
 import { supabase } from '@/utility';
 
 export interface ServiceRequestData {
@@ -16,26 +17,40 @@ export interface ServiceRequestData {
   };
 }
 
+export interface ContractorOfferData {
+  id: string;
+  contractor_id: string;
+  price: number;
+  scope: string;
+  status: string;
+  created_at: string;
+}
+
+export interface ContractorPortfolioData {
+  id: string;
+  contractor_id: string;
+  company_name: string;
+  nip: string;
+  company_address: string;
+  description: string;
+  contractor_gallery?: Array<{
+    id: string;
+    image_url?: string;
+    description?: string;
+  }>;
+}
+
 export const contractorApi = {
+  // === SERVICE REQUESTS ===
   async getServiceRequests(): Promise<ServiceRequestData[]> {
     const { data, error } = await supabase
       .from('service_requests')
       .select(`
         *,
-        users(
-          id,
-          email,
-          first_name,
-          last_name
-        )
+        users(id, email, first_name, last_name)
       `)
       .order('created_at', { ascending: false });
-
-    if (error) {
-      console.error('Error fetching service requests:', error);
-      throw error;
-    }
-
+    if (error) throw error;
     return data || [];
   },
 
@@ -44,21 +59,11 @@ export const contractorApi = {
       .from('service_requests')
       .select(`
         *,
-        users(
-          id,
-          email,
-          first_name,
-          last_name
-        )
+        users(id, email, first_name, last_name)
       `)
       .eq('id', id)
       .single();
-
-    if (error) {
-      console.error('Error fetching service request:', error);
-      throw error;
-    }
-
+    if (error) throw error;
     return data;
   },
 
@@ -68,20 +73,10 @@ export const contractorApi = {
       .insert([requestData])
       .select(`
         *,
-        users(
-          id,
-          email,
-          first_name,
-          last_name
-        )
+        users(id, email, first_name, last_name)
       `)
       .single();
-
-    if (error) {
-      console.error('Error creating service request:', error);
-      throw error;
-    }
-
+    if (error) throw error;
     return data;
   },
 
@@ -92,20 +87,10 @@ export const contractorApi = {
       .eq('id', id)
       .select(`
         *,
-        users(
-          id,
-          email,
-          first_name,
-          last_name
-        )
+        users(id, email, first_name, last_name)
       `)
       .single();
-
-    if (error) {
-      console.error('Error updating service request:', error);
-      throw error;
-    }
-
+    if (error) throw error;
     return data;
   },
 
@@ -114,10 +99,67 @@ export const contractorApi = {
       .from('service_requests')
       .delete()
       .eq('id', id);
+    if (error) throw error;
+  },
 
-    if (error) {
-      console.error('Error deleting service request:', error);
-      throw error;
-    }
-  }
+  // === CONTRACTOR OFFERS ===
+  async getContractorOffers(contractorId: string): Promise<ContractorOfferData[]> {
+    const { data, error } = await supabase
+      .from('contractor_offers')
+      .select('*')
+      .eq('contractor_id', contractorId)
+      .order('created_at', { ascending: false });
+    if (error) throw error;
+    return data || [];
+  },
+
+  async createOffer(offer: Partial<ContractorOfferData> & { contractor_id: string }): Promise<ContractorOfferData> {
+    const { data, error } = await supabase
+      .from('contractor_offers')
+      .insert([offer])
+      .single();
+    if (error) throw error;
+    return data;
+  },
+
+  // === CONTRACTOR PORTFOLIO ===
+  async getPortfolio(contractorId: string): Promise<ContractorPortfolioData | null> {
+    const { data, error } = await supabase
+      .from('contractor_portfolios')
+      .select(`
+        *,
+        contractor_gallery(id, image_url, description)
+      `)
+      .eq('contractor_id', contractorId)
+      .single();
+    if (error) throw error;
+    return data;
+  },
+
+  async createPortfolio(portfolio: Omit<ContractorPortfolioData, 'id'>): Promise<ContractorPortfolioData> {
+    const { data, error } = await supabase
+      .from('contractor_portfolios')
+      .insert([portfolio])
+      .select(`
+        *,
+        contractor_gallery(id, image_url, description)
+      `)
+      .single();
+    if (error) throw error;
+    return data;
+  },
+
+  async updatePortfolio(id: string, updates: Partial<ContractorPortfolioData>): Promise<ContractorPortfolioData> {
+    const { data, error } = await supabase
+      .from('contractor_portfolios')
+      .update(updates)
+      .eq('id', id)
+      .select(`
+        *,
+        contractor_gallery(id, image_url, description)
+      `)
+      .single();
+    if (error) throw error;
+    return data;
+  },
 };

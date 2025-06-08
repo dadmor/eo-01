@@ -1,4 +1,3 @@
-import { useCreate } from "@pankod/refine-core";
 
 export const ServiceRequestForm = () => {
   const { mutate } = useCreate();
@@ -14,3 +13,7 @@ export const ServiceRequestForm = () => {
     </div>
   );
 };
+function useCreate(): { mutate: any; } {
+  throw new Error("Function not implemented.");
+}
+
