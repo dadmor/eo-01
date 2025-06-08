@@ -6,16 +6,13 @@ import { useAuth } from "@/hooks/useAuth";
 
 export const Login: React.FC = () => {
   const { getFormData } = useSimpleForm();
-  const { login, user, loading: authLoading, resendConfirmationEmail } = useAuth();
+  const { login, user, loading: authLoading } = useAuth();
   const navigate = useNavigate();
 
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
-  const [lastEmail, setLastEmail] = useState<string>("");
-  const [showResend, setShowResend] = useState(false);
-  const [resendLoading, setResendLoading] = useState(false);
-  const [resendSuccess, setResendSuccess] = useState(false);
 
+  // przekierowanie po zalogowaniu
   useEffect(() => {
     if (user) {
       if (user.role === "admin") navigate("/admin/dashboard");
@@ -27,48 +24,17 @@ export const Login: React.FC = () => {
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError(null);
-    setShowResend(false);
-    setResendSuccess(false);
-
-    const { email: rawEmail, password: rawPassword } = getFormData(e.currentTarget);
-
-    // Wyciągamy pierwszy element, jeśli to tablica
-    const email = Array.isArray(rawEmail) ? rawEmail[0] : rawEmail;
-    const password = Array.isArray(rawPassword) ? rawPassword[0] : rawPassword;
-
-    setLastEmail(email);
+    const { email, password } = getFormData(e.currentTarget);
 
     try {
       setLoading(true);
       await login(email, password);
+      // jeśli logowanie nie rzuci error, useEffect zajmie się redirectem
     } catch (err: any) {
-      console.error("Login error:", err);
-      const msg = err.message || "Coś poszło nie tak przy logowaniu";
-      setError(msg);
-
-      if (
-        err.status === 400 ||
-        /not confirmed/i.test(msg) ||
-        /potwierdzony/i.test(msg)
-      ) {
-        setShowResend(true);
-      }
+      // złapany SupabaseError ma pole .message
+      setError(err.message || "Coś poszło nie tak przy logowaniu");
     } finally {
       setLoading(false);
-    }
-  };
-
-  const handleResend = async () => {
-    setResendLoading(true);
-    setResendSuccess(false);
-    try {
-      await resendConfirmationEmail(lastEmail);
-      setResendSuccess(true);
-    } catch (err) {
-      console.error("Resend error:", err);
-      setError("Nie udało się wysłać maila ponownie");
-    } finally {
-      setResendLoading(false);
     }
   };
 
@@ -81,25 +47,8 @@ export const Login: React.FC = () => {
         <h2 className="text-2xl font-bold text-center">Logowanie</h2>
 
         {error && (
-          <div className="alert alert-error space-y-2">
+          <div className="alert alert-error">
             <span>{error}</span>
-            {showResend && (
-              <>
-                {resendSuccess && (
-                  <div className="alert alert-success">
-                    Mail potwierdzający został wysłany ponownie.
-                  </div>
-                )}
-                <button
-                  type="button"
-                  className={`btn btn-secondary w-full ${resendLoading ? "loading" : ""}`}
-                  onClick={handleResend}
-                  disabled={resendLoading}
-                >
-                  Wyślij ponownie e-mail potwierdzający
-                </button>
-              </>
-            )}
           </div>
         )}
 

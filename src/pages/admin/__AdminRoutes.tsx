@@ -4,6 +4,7 @@ import { Route } from "react-router-dom";
 import { AdminUsers } from "./AdminUsers";
 import { AdminSettings } from "./AdminSettings";
 import { AdminLogs } from "./AdminLogs";
+import ProtectedRoute from "@/components/ProtectedRoute";
 
 export const AdminRoutes = () => (
   <>
