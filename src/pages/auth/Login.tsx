@@ -8,6 +8,7 @@ import { Card } from "@/components/ui/basic/Card";
 import { Button } from "@/components/ui/basic/Button";
 import { Alert } from "@/components/ui/basic/Alert";
 import { LoadingSpinner } from "@/components/ui/basic/LoadingSpinner";
+import { LoginSuccessStep } from "./LoginSuccessStep";
 
 export const Login: React.FC = () => {
   const { getFormData } = useSimpleForm();
@@ -21,20 +22,35 @@ export const Login: React.FC = () => {
   const [resendLoading, setResendLoading] = useState(false);
   const [resendSuccess, setResendSuccess] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [loginSuccess, setLoginSuccess] = useState(false);
+
+  // Funkcja do określenia ścieżki dashboardu na podstawie roli
+  const getDashboardPath = (role: string) => {
+    switch (role) {
+      case "admin":
+        return "/admin/dashboard";
+      case "contractor":
+        return "/dashboard";
+      case "auditor":
+        return "/auditor/dashboard";
+      default:
+        return "/";
+    }
+  };
 
   useEffect(() => {
-    if (user) {
-      if (user.role === "admin") navigate("/admin/dashboard");
-      else if (user.role === "contractor") navigate("/dashboard");
-      else navigate("/");
+    if (user && !loginSuccess) {
+      setLoginSuccess(true);
+      // Nie przekierowujemy automatycznie - pokazujemy komunikat sukcesu
     }
-  }, [user, navigate]);
+  }, [user, loginSuccess]);
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setError(null);
     setShowResend(false);
     setResendSuccess(false);
+    setLoginSuccess(false);
 
     const { email: rawEmail, password: rawPassword } = getFormData(e.currentTarget);
 
@@ -76,6 +92,28 @@ export const Login: React.FC = () => {
       setResendLoading(false);
     }
   };
+
+  const handleGoToDashboard = () => {
+    if (user) {
+      navigate(getDashboardPath(user.role));
+    }
+  };
+
+  const handleBackToLogin = () => {
+    setLoginSuccess(false);
+    // Opcjonalnie można wylogować użytkownika
+  };
+
+  // Jeśli użytkownik jest zalogowany i loginSuccess jest true, pokaż komunikat sukcesu
+  if (user && loginSuccess) {
+    return (
+      <LoginSuccessStep
+        user={user}
+        onGoToDashboard={handleGoToDashboard}
+        onBackToLogin={handleBackToLogin}
+      />
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 flex items-center justify-center p-4">
