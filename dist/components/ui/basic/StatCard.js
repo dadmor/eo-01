@@ -1,4 +1,5 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
+// src/components/StatCard.tsx
 import { Card } from "./Card";
 export const StatCard = ({ icon, title, value, subtitle, color = "blue", }) => {
     // Każdy wpis to [bgClass, textClass]
