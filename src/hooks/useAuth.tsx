@@ -156,7 +156,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       type: "signup",
       email,
       options: {
-        emailRedirectTo: options?.emailRedirectTo || window.location.origin,
+        emailRedirectTo: options?.emailRedirectTo || 
+          import.meta.env.VITE_SITE_URL + '/auth/callback' || 
+          window.location.origin + '/auth/callback',
       },
     });
     if (error) throw error;

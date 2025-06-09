@@ -49,7 +49,8 @@ export const Register: React.FC = () => {
         options: { 
           data: { 
             role: role || 'beneficiary'
-          } 
+          },
+          emailRedirectTo: import.meta.env.VITE_SITE_URL + '/auth/callback' || `${window.location.origin}/auth/callback`
         }
       });
       
