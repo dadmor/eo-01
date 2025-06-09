@@ -1,12 +1,26 @@
 import React from 'react';
 
-const CheckboxGroup = ({ 
+interface Option {
+  value: string;
+  label: string;
+}
+
+interface CheckboxGroupProps {
+  options: Option[];
+  value?: string[];
+  onChange?: (value: string[]) => void;
+  name?: string;
+  className?: string;
+  layout?: "vertical" | "horizontal" | "grid";
+}
+
+const CheckboxGroup: React.FC<CheckboxGroupProps> = ({ 
   options, 
   value = [], 
   onChange, 
   name,
   className = "",
-  layout = "vertical" // "vertical" | "horizontal" | "grid"
+  layout = "vertical"
 }) => {
   const handleChange = (optionValue: string, checked: boolean) => {
     if (checked) {

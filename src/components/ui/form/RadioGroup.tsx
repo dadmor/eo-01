@@ -1,12 +1,26 @@
 import React from 'react';
 
-const RadioGroup = ({ 
+interface Option {
+  value: string;
+  label: string;
+}
+
+interface RadioGroupProps {
+  options: Option[];
+  value?: string;
+  onChange?: (value: string) => void;
+  name?: string;
+  className?: string;
+  layout?: "vertical" | "horizontal" | "grid";
+}
+
+const RadioGroup: React.FC<RadioGroupProps> = ({ 
   options, 
   value, 
   onChange, 
   name,
   className = "",
-  layout = "vertical" // "vertical" | "horizontal" | "grid"
+  layout = "vertical"
 }) => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     onChange?.(e.target.value);

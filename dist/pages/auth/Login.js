@@ -25,12 +25,14 @@ export const Login = () => {
     // Funkcja do określenia ścieżki dashboardu na podstawie roli
     const getDashboardPath = (role) => {
         switch (role) {
-            case "admin":
-                return "/admin/dashboard";
-            case "contractor":
-                return "/dashboard";
+            case "beneficiary":
+                return "/beneficiary/my-requests";
             case "auditor":
                 return "/auditor/marketplace";
+            case "operator":
+                return "/operator/dashboard";
+            case "admin":
+                return "/admin/users";
             default:
                 return "/";
         }
