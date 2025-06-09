@@ -5,6 +5,7 @@ interface ButtonProps {
   children: React.ReactNode;
   variant?: 'primary' | 'secondary' | 'outline' | 'ghost';
   size?: 'sm' | 'md' | 'lg';
+  type?: 'button' | 'submit' | 'reset';
   onClick?: () => void;
   className?: string;
   icon?: React.ReactNode;
@@ -16,6 +17,7 @@ export const Button: React.FC<ButtonProps> = ({
   children,
   variant = "outline",
   size = "md",
+  type = "button",
   onClick,
   className = "",
   icon,
@@ -53,6 +55,7 @@ export const Button: React.FC<ButtonProps> = ({
 
   return (
     <button
+      type={type}
       className={`${baseClasses} ${variantClasses} ${sizes[size]} ${widthClass} ${iconGap} ${className}`}
       onClick={disabled ? undefined : onClick}
       disabled={disabled}

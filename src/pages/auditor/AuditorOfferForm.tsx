@@ -1,15 +1,9 @@
 // src/pages/auditor/AuditorOfferForm.tsx
-import React, { useState } from "react";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import React, { useState, useEffect } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useSearchParams } from "react-router-dom";
 import { Card, Button, LoadingSpinner, Alert } from "../../components/ui/basic";
-import {
-  FormField,
-  FormInput,
-  FormTextarea,
-  SelectFilter,
-  type Option,
-} from "../../components/ui/form";
-
+import { FormField, FormInput, FormTextarea } from "../../components/ui/form";
 import { FileCheck, DollarSign, Calendar } from "lucide-react";
 import { auditorApi, AuditorOfferData, AuditRequestData } from "./api/auditors";
 import { useAuth } from "../../hooks/useAuth";
@@ -21,356 +15,232 @@ interface FormData {
   description: string;
 }
 
-interface AuditRequest {
-  id: string;
-  city?: string;
-  street_address?: string;
-  beneficiary_id: string;
-}
-
 export const AuditorOfferForm: React.FC = () => {
+  // All hooks must be called unconditionally
   const { user, delegatedUser } = useAuth();
   const currentUser = delegatedUser || user;
   const auditorId = currentUser?.id;
 
+  const [searchParams] = useSearchParams();
+  const presetRequestId = searchParams.get("requestId") || "";
+
+  const queryClient = useQueryClient();
   const [formData, setFormData] = useState<FormData>({
-    request_id: "",
+    request_id: presetRequestId,
     price: "",
     duration_days: "",
     description: "",
   });
-
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const queryClient = useQueryClient();
 
-  // Sprawdź czy użytkownik jest zalogowany jako audytor
+  useEffect(() => {
+    if (presetRequestId) {
+      setFormData(fd => ({ ...fd, request_id: presetRequestId }));
+    }
+  }, [presetRequestId]);
+
+  const requestsQuery = useQuery({
+    queryKey: ["audit-requests"],
+    queryFn: auditorApi.getAuditRequests,
+  });
+
+  const offersQuery = useQuery({
+    queryKey: ["auditor-offers", auditorId],
+    queryFn: () => auditorApi.getAuditorOffers(),
+    enabled: !!auditorId,
+  });
+
+  const createOfferMutation = useMutation({
+    mutationFn: (data: Partial<AuditorOfferData>) => auditorApi.createAuditorOffer(data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['auditor-offers'] });
+      setFormData({ request_id: presetRequestId, price: "", duration_days: "", description: "" });
+      setErrors({});
+    },
+    onError: err => {
+      if ((err as any)?.code === "23505") {
+        setErrors({ request_id: "Oferta na to zlecenie już istnieje." });
+      }
+    },
+  });
+
+  // Now that hooks are set up, handle conditional UI
   if (!currentUser || !auditorId) {
     return (
       <div className="p-6">
         <Alert
           type="error"
           title="Błąd autoryzacji"
-          message="Nie można załadować danych audytora. Zaloguj się ponownie."
+          message="Zaloguj się ponownie, aby składać oferty."
         />
       </div>
     );
   }
 
-  if (currentUser.role !== "auditor") {
+  const { data: auditRequests = [], isLoading: loadingReq, error: reqError } = requestsQuery;
+  const { data: existingOffers = [], isLoading: loadingOff, error: offError } = offersQuery;
+
+  if (loadingReq || loadingOff) {
+    return (
+      <div className="p-6 flex justify-center">
+        <LoadingSpinner size="lg" />
+      </div>
+    );
+  }
+
+  if (reqError || offError) {
+    return (
+      <div className="p-6">
+        <Alert type="error" title="Błąd" message="Nie można pobrać danych." />
+      </div>
+    );
+  }
+
+  // Compute available requests for selection
+  const availableRequests = auditRequests.filter(
+    r => r.beneficiary_id !== auditorId &&
+         !existingOffers.some(o => o.request_id === r.id)
+  );
+
+  if (!presetRequestId && availableRequests.length === 0) {
     return (
       <div className="p-6">
         <Alert
-          type="error"
-          title="Brak uprawnień"
-          message="Tylko audytorzy mogą składać oferty audytu."
+          type="info"
+          title="Brak zleceń"
+          message="Brak dostępnych zleceń audytu."
         />
       </div>
     );
   }
 
-  const {
-    data: auditRequests = [],
-    isLoading: requestsLoading,
-    error: requestsError,
-  } = useQuery<AuditRequestData[]>({
-    queryKey: ["audit-requests"],
-    queryFn: auditorApi.getAuditRequests,
-  });
-
-  // DODANO: Pobierz istniejące oferty audytora
-  const {
-    data: existingOffers = [],
-    isLoading: offersLoading,
-    error: offersError,
-  } = useQuery({
-    queryKey: ["auditor-offers", auditorId],
-    queryFn: auditorApi.getAuditorOffers,
-  });
-
-  const createOfferMutation = useMutation({
-    mutationFn: (offerData: Partial<AuditorOfferData>) =>
-      auditorApi.createAuditorOffer(offerData),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["auditor-offers"] });
-      // Reset form after successful submission
-      setFormData({
-        request_id: "",
-        price: "",
-        duration_days: "",
-        description: "",
-      });
-      setErrors({});
-    },
-    onError: (error: any) => {
-      console.error("Error creating offer:", error);
-      
-      // DODANO: Sprawdź czy błąd dotyczy duplikatu
-      if (error?.code === '23505' || error?.message?.includes('duplicate key')) {
-        setErrors({
-          request_id: "Już złożyłeś ofertę na to zlecenie. Możesz ją edytować w sekcji 'Moje Oferty'."
-        });
-      }
-    },
-  });
-
-  const handleInputChange = (field: keyof FormData, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-    // Clear error when user starts typing
-    if (errors[field]) {
-      setErrors((prev) => ({ ...prev, [field]: "" }));
-    }
+  // Handlers and validation
+  const handleChange = (field: keyof FormData, value: string) => {
+    setFormData(fd => ({ ...fd, [field]: value }));
+    if (errors[field]) setErrors(e => ({ ...e, [field]: "" }));
   };
 
-  const validateForm = (): boolean => {
+  const validate = () => {
     const newErrors: Record<string, string> = {};
-
-    if (!formData.request_id.trim()) {
-      newErrors.request_id = "Wybierz zlecenie audytu";
-    } else {
-      // DODANO: Sprawdź czy audytor już złożył ofertę na to zlecenie
-      const hasExistingOffer = existingOffers.some(
-        (offer) => offer.request_id === formData.request_id && offer.auditor_id === auditorId
-      );
-      
-      if (hasExistingOffer) {
-        newErrors.request_id = "Już złożyłeś ofertę na to zlecenie. Możesz ją edytować w sekcji 'Moje Oferty'.";
-      }
+    if (!formData.request_id) newErrors.request_id = "Wybierz zlecenie audytu.";
+    const priceNum = Number(formData.price);
+    if (!formData.price || isNaN(priceNum) || priceNum <= 0) {
+      newErrors.price = "Podaj cenę większą niż 0.";
     }
-
-    const price = Number(formData.price);
-    if (!formData.price.trim() || isNaN(price) || price <= 0) {
-      newErrors.price = "Podaj prawidłową cenę (większą od 0)";
+    const daysNum = Number(formData.duration_days);
+    if (!formData.duration_days || isNaN(daysNum) || daysNum <= 0 || !Number.isInteger(daysNum)) {
+      newErrors.duration_days = "Podaj liczbę dni większą niż 0.";
     }
-
-    const duration = Number(formData.duration_days);
-    if (
-      !formData.duration_days.trim() ||
-      isNaN(duration) ||
-      duration <= 0 ||
-      !Number.isInteger(duration)
-    ) {
-      newErrors.duration_days =
-        "Podaj prawidłową liczbę dni (liczba całkowita większa od 0)";
-    }
-
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+  const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (!validateForm()) {
-      return;
-    }
-
-    const offerData: Partial<AuditorOfferData> = {
+    if (!validate()) return;
+    createOfferMutation.mutate({
       request_id: formData.request_id,
       auditor_id: auditorId,
       price: Number(formData.price),
       duration_days: Number(formData.duration_days),
       description: formData.description.trim() || undefined,
       status: "pending",
-    };
-
-    console.log("Submitting auditor offer:", offerData);
-    createOfferMutation.mutate(offerData);
-  };
-
-  const handleClearForm = () => {
-    setFormData({
-      request_id: "",
-      price: "",
-      duration_days: "",
-      description: "",
     });
-    setErrors({});
   };
 
-  // ZMIENIONO: Filtruj zlecenia, wykluczając te na które audytor już złożył ofertę
-  const offeredRequestIds = existingOffers
-    .filter(offer => offer.auditor_id === auditorId)
-    .map(offer => offer.request_id);
-
-  const availableRequests = auditRequests?.filter(
-    (request) => 
-      request.beneficiary_id !== auditorId && // Audytor nie może składać ofert na swoje zlecenia
-      !offeredRequestIds.includes(request.id) // Wykluczamy zlecenia na które już złożył ofertę
-  ) || [];
-
-  // Transform audit requests to options for SelectFilter
-  const requestOptions: Option[] = availableRequests.map((request) => ({
-    value: request.id,
-    label: `${request.city || "Nie podano miasta"} - ${
-      request.street_address || "Adres do uzgodnienia"
-    }`,
-  }));
-
-  const isLoading = requestsLoading || offersLoading;
-  const hasError = requestsError || offersError;
-
-  if (isLoading) {
-    return (
-      <div className="p-6">
-        <div className="flex items-center justify-center min-h-96">
-          <LoadingSpinner size="lg" />
-        </div>
-      </div>
-    );
-  }
-
-  if (hasError) {
-    return (
-      <div className="p-6">
-        <Alert
-          type="error"
-          title="Błąd ładowania"
-          message="Nie udało się załadować danych. Spróbuj odświeżyć stronę."
-        />
-      </div>
-    );
-  }
-
-  if (availableRequests.length === 0) {
-    return (
-      <div className="p-6">
-        <Alert
-          type="info"
-          title="Brak dostępnych zleceń"
-          message="Obecnie nie ma dostępnych zleceń audytu do złożenia oferty. Sprawdź sekcję 'Moje Oferty' aby zobaczyć już złożone oferty."
-        />
-      </div>
-    );
-  }
+  const selectedRequest = auditRequests.find(r => r.id === formData.request_id);
 
   return (
     <div className="p-6 space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold text-slate-900">
-          Nowa Oferta Audytu
-        </h1>
-        <p className="text-slate-600 mt-1">Złóż ofertę na wykonanie audytu</p>
-      </div>
-
-      {/* Error Alert */}
-      {createOfferMutation.isError && !errors.request_id && (
-        <Alert
-          type="error"
-          title="Błąd"
-          message="Nie udało się złożyć oferty. Spróbuj ponownie."
-        />
+      <h1 className="text-3xl font-bold">Nowa Oferta Audytu</h1>
+      {createOfferMutation.isError && (
+        <Alert type="error" title="Błąd" message="Nie udało się złożyć oferty." />
       )}
-
-      {/* Success Alert */}
       {createOfferMutation.isSuccess && (
-        <Alert
-          type="success"
-          title="Sukces"
-          message="Oferta została złożona pomyślnie!"
-        />
+        <Alert type="success" title="Sukces" message="Oferta została złożona." />
       )}
 
-      <Card>
-        <div className="p-6">
-          <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Request Selection */}
-            <FormField
-              label="Wybierz zlecenie audytu"
-              error={errors.request_id}
-              required
+      <form onSubmit={onSubmit} className="space-y-6">
+        <FormField label="Zlecenie audytu" error={errors.request_id} required>
+          {presetRequestId && selectedRequest ? (
+            <Card className="p-4">
+              <p><strong>Miasto:</strong> {selectedRequest.city || "–"}</p>
+              <p><strong>Adres:</strong> {selectedRequest.street_address || "–"}</p>
+              <input type="hidden" name="request_id" value={selectedRequest.id} />
+            </Card>
+          ) : (
+            <select
+              name="request_id"
+              value={formData.request_id}
+              onChange={e => handleChange('request_id', e.target.value)}
+              className="w-full border p-2 rounded"
             >
-              <SelectFilter
-                options={requestOptions}
-                value={formData.request_id}
-                onChange={(value) =>
-                  handleInputChange("request_id", value as string)
-                }
-                placeholder="Wybierz zlecenie..."
-                name="request_id"
-              />
-            </FormField>
+              <option value="">Wybierz zlecenie...</option>
+              {availableRequests.map(r => (
+                <option key={r.id} value={r.id}>
+                  {r.city || '–'} – {r.street_address || '–'}
+                </option>
+              ))}
+            </select>
+          )}
+        </FormField>
 
-            {/* Price and Duration */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <FormField label="Cena (PLN)" error={errors.price} required>
-                <FormInput
-                  type="number"
-                  name="price"
-                  value={formData.price}
-                  onChange={(e) => handleInputChange("price", e.target.value)}
-                  placeholder="np. 2500"
-                  min="1"
-                  step="0.01"
-                  icon={<DollarSign className="w-4 h-4" />}
-                />
-              </FormField>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <FormField label="Cena (PLN)" error={errors.price} required>
+            <FormInput
+              type="number"
+              name="price"
+              value={formData.price}
+              onChange={e => handleChange('price', e.target.value)}
+              placeholder="np. 2500"
+              min="1"
+              step="0.01"
+              icon={<DollarSign className="w-4 h-4" />}
+            />
+          </FormField>
 
-              <FormField
-                label="Czas realizacji (dni)"
-                error={errors.duration_days}
-                required
-              >
-                <FormInput
-                  type="number"
-                  name="duration_days"
-                  value={formData.duration_days}
-                  onChange={(e) =>
-                    handleInputChange("duration_days", e.target.value)
-                  }
-                  placeholder="np. 14"
-                  min="1"
-                  step="1"
-                  icon={<Calendar className="w-4 h-4" />}
-                />
-              </FormField>
-            </div>
-
-            {/* Description */}
-            <FormField label="Dodatkowe informacje (opcjonalne)">
-              <FormTextarea
-                name="description"
-                value={formData.description}
-                onChange={(e) =>
-                  handleInputChange("description", e.target.value)
-                }
-                placeholder="Opisz swoje doświadczenie, metodologię audytu, certyfikaty..."
-                rows={4}
-                maxLength={1000}
-              />
-              {formData.description && (
-                <div className="text-xs text-slate-500 mt-1">
-                  {formData.description.length}/1000 znaków
-                </div>
-              )}
-            </FormField>
-
-            {/* Form Actions */}
-            <div className="flex gap-4">
-              <Button
-                variant="primary"
-                disabled={createOfferMutation.isPending}
-                className="flex items-center gap-2"
-              >
-                {createOfferMutation.isPending ? (
-                  <LoadingSpinner size="sm" />
-                ) : (
-                  <FileCheck className="w-4 h-4" />
-                )}
-                {createOfferMutation.isPending ? "Wysyłanie..." : "Złóż ofertę"}
-              </Button>
-
-              <Button
-                variant="outline"
-                onClick={handleClearForm}
-                disabled={createOfferMutation.isPending}
-              >
-                Wyczyść
-              </Button>
-            </div>
-          </form>
+          <FormField label="Czas realizacji (dni)" error={errors.duration_days} required>
+            <FormInput
+              type="number"
+              name="duration_days"
+              value={formData.duration_days}
+              onChange={e => handleChange('duration_days', e.target.value)}
+              placeholder="np. 14"
+              min="1"
+              step="1"
+              icon={<Calendar className="w-4 h-4" />}
+            />
+          </FormField>
         </div>
-      </Card>
+
+        <FormField label="Uwagi (opcjonalne)">
+          <FormTextarea
+            name="description"
+            value={formData.description}
+            onChange={e => handleChange('description', e.target.value)}
+            rows={4}
+            placeholder="Opis..."
+          />
+        </FormField>
+
+        <div className="flex gap-4">
+        <Button
+  type="submit"
+  variant="primary"
+  disabled={createOfferMutation.isLoading}
+>
+  {createOfferMutation.isLoading ? 'Wysyłanie...' : 'Złóż ofertę'}
+</Button>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => setFormData({ request_id: presetRequestId, price: '', duration_days: '', description: '' })}
+            disabled={createOfferMutation.isLoading}
+          >
+            Anuluj
+          </Button>
+        </div>
+      </form>
     </div>
   );
 };

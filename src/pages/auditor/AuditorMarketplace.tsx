@@ -1,6 +1,7 @@
-// ------ src/pages/auditor/AuditorMarketplace.tsx ------
+// src/pages/auditor/AuditorMarketplace.tsx
 import React, { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
+import { useNavigate } from 'react-router-dom';
 import { 
   Card, 
   Button, 
@@ -34,6 +35,7 @@ const getDisplayName = (user: any) => {
 };
 
 export const AuditorMarketplace: React.FC = () => {
+  const navigate = useNavigate();
   const [searchTerm, setSearchTerm] = useState('');
   const [locationFilter, setLocationFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
@@ -204,10 +206,17 @@ export const AuditorMarketplace: React.FC = () => {
               </div>
 
               <div className="flex gap-2">
-                <Button variant="primary" className="flex-1">
+                <Button
+                  variant="primary"
+                  className="flex-1"
+                  onClick={() => navigate(`/auditor/offer/new?requestId=${request.id}`)}
+                >
                   Złóż ofertę
                 </Button>
-                <Button variant="outline">
+                <Button
+                  variant="outline"
+                  onClick={() => navigate(`/auditor/marketplace/${request.id}`)}
+                >
                   Szczegóły
                 </Button>
               </div>

@@ -5,6 +5,7 @@ import {
   AuditorOfferForm,
   AuditorOffers,
   AuditorPortfolio,
+  AuditRequestDetail,
 } from ".";
 import { SidebarLayout } from "@/components/layout/SidebarLayout";
 import Navigation from "@/components/Navigation";
@@ -45,6 +46,15 @@ export const AuditorRoutes = () => (
         <SidebarLayout userRole="auditor">
           <Navigation />
           <AuditorPortfolio />
+        </SidebarLayout>
+      }
+    />
+    <Route
+      path="/auditor/marketplace/:id"
+      element={
+        <SidebarLayout userRole="auditor">
+          <Navigation />
+          <AuditRequestDetail />
         </SidebarLayout>
       }
     />
