@@ -224,18 +224,15 @@ export const AuditorOfferForm: React.FC = () => {
         </FormField>
 
         <div className="flex gap-4">
-        <Button
-  type="submit"
-  variant="primary"
-  disabled={createOfferMutation.isLoading}
->
-  {createOfferMutation.isLoading ? 'Wysyłanie...' : 'Złóż ofertę'}
-</Button>
+          <Button type="submit" variant="primary" disabled={createOfferMutation.isPending} className="flex items-center gap-2">
+            <FileCheck className="w-4 h-4" />
+            {createOfferMutation.isPending ? 'Wysyłanie...' : 'Złóż ofertę'}
+          </Button>
           <Button
             type="button"
             variant="outline"
             onClick={() => setFormData({ request_id: presetRequestId, price: '', duration_days: '', description: '' })}
-            disabled={createOfferMutation.isLoading}
+            disabled={createOfferMutation.isPending}
           >
             Anuluj
           </Button>
