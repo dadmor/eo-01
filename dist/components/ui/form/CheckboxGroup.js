@@ -1,6 +1,5 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
-const CheckboxGroup = ({ options, value = [], onChange, name, className = "", layout = "vertical" // "vertical" | "horizontal" | "grid"
- }) => {
+const CheckboxGroup = ({ options, value = [], onChange, name, className = "", layout = "vertical" }) => {
     const handleChange = (optionValue, checked) => {
         if (checked) {
             const newValue = [...value, optionValue];

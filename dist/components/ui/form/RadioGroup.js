@@ -1,6 +1,5 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
-const RadioGroup = ({ options, value, onChange, name, className = "", layout = "vertical" // "vertical" | "horizontal" | "grid"
- }) => {
+const RadioGroup = ({ options, value, onChange, name, className = "", layout = "vertical" }) => {
     const handleChange = (e) => {
         onChange?.(e.target.value);
     };
