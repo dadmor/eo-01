@@ -71,15 +71,20 @@ export function AuthProvider({ children }) {
         return !!data;
     }
     useEffect(() => {
-        (async () => {
+        // ✅ Poprawione - async funkcja w środku
+        const initializeAuth = async () => {
             const { data: { session }, } = await supabase.auth.getSession();
             if (session?.user)
                 await fetchUser(session.user.id);
             setLoading(false);
-        })();
+        };
+        initializeAuth();
+        // ✅ Poprawione - callback nie zwraca Promise
         const { data: listener } = supabase.auth.onAuthStateChange((_, session) => {
-            if (session?.user)
-                fetchUser(session.user.id);
+            if (session?.user) {
+                // Nie await'ujemy tutaj - fetchUser wykona się asynchronicznie
+                fetchUser(session.user.id).catch(console.error);
+            }
             else {
                 setUser(null);
                 setDelegatedUser(null);

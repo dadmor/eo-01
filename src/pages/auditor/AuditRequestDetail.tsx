@@ -14,11 +14,11 @@ export const AuditRequestDetail: React.FC = () => {
     isLoading,
     error,
     refetch,
-  } = useQuery<AuditRequestData | null>(
-    ['audit-request', id],
-    () => auditorApi.getAuditRequestById(id!),
-    { enabled: Boolean(id) }
-  );
+  } = useQuery<AuditRequestData | null>({
+    queryKey: ['audit-request', id],
+    queryFn: () => auditorApi.getAuditRequestById(id!),
+    enabled: Boolean(id),
+  });
 
   if (isLoading) {
     return (

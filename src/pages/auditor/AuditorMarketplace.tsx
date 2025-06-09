@@ -184,26 +184,37 @@ export const AuditorMarketplace: React.FC = () => {
                 </div>
               </div>
 
-              <div className="flex items-center gap-4 text-sm text-slate-500 mb-4">
-                <div className="flex items-center gap-1">
-                  <MapPin className="w-4 h-4" />
-                  <span>{request.postal_code || ''} {request.city || 'Nie podano'}</span>
-                </div>
-                <div className="flex items-center gap-1">
-                  <User className="w-4 h-4" />
-                  <span>{getDisplayName(request.users)}</span>
-                </div>
-                {request.phone_number && (
-                  <div className="flex items-center gap-1">
-                    <Phone className="w-4 h-4" />
-                    <span>{request.phone_number}</span>
-                  </div>
-                )}
-                <div className="flex items-center gap-1">
-                  <Clock className="w-4 h-4" />
-                  <span>{new Date(request.created_at).toLocaleDateString('pl')}</span>
-                </div>
-              </div>
+              <div className="grid grid-cols-1 gap-2 text-sm text-slate-500 mb-4 sm:grid-cols-2">
+      {/* Adres */}
+      <div className="flex items-center gap-1 min-w-0">
+        <MapPin className="w-4 h-4" />
+        <span className="truncate">
+          {request.postal_code || ''} {request.city || 'Nie podano'}
+        </span>
+      </div>
+
+      {/* Użytkownik */}
+      <div className="flex items-center gap-1 min-w-0">
+        <User className="w-4 h-4" />
+        <span className="truncate">{getDisplayName(request.users)}</span>
+      </div>
+
+      {/* Telefon (schowane na <sm) */}
+      {request.phone_number && (
+        <div className="hidden sm:flex items-center gap-1 min-w-0">
+          <Phone className="w-4 h-4" />
+          <span className="truncate">{request.phone_number}</span>
+        </div>
+      )}
+
+      {/* Data */}
+      <div className="flex items-center gap-1">
+        <Clock className="w-4 h-4" />
+        <span className="whitespace-nowrap">
+          {new Date(request.created_at).toLocaleDateString('pl')}
+        </span>
+      </div>
+    </div>
 
               <div className="flex gap-2">
                 <Button

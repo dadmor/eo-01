@@ -1,5 +1,5 @@
 import { jsxs as _jsxs } from "react/jsx-runtime";
-export const Button = ({ children, variant = "outline", size = "md", onClick, className = "", icon, fullWidth = false, disabled = false, }) => {
+export const Button = ({ children, variant = "outline", size = "md", type = "button", onClick, className = "", icon, fullWidth = false, disabled = false, }) => {
     const baseClasses = "inline-flex items-center justify-center font-medium rounded-lg transition-colors focus:outline-none";
     const variants = {
         primary: "bg-slate-900 text-white hover:bg-slate-800 focus:ring-2 focus:ring-offset-2 focus:ring-slate-500",
@@ -22,5 +22,5 @@ export const Button = ({ children, variant = "outline", size = "md", onClick, cl
     const iconGap = icon ? "gap-2" : "";
     const focusClasses = disabled ? "" : "focus:ring-2 focus:ring-offset-2";
     const variantClasses = disabled ? disabledVariants[variant] : variants[variant];
-    return (_jsxs("button", { className: `${baseClasses} ${variantClasses} ${sizes[size]} ${widthClass} ${iconGap} ${className}`, onClick: disabled ? undefined : onClick, disabled: disabled, children: [icon, children] }));
+    return (_jsxs("button", { type: type, className: `${baseClasses} ${variantClasses} ${sizes[size]} ${widthClass} ${iconGap} ${className}`, onClick: disabled ? undefined : onClick, disabled: disabled, children: [icon, children] }));
 };

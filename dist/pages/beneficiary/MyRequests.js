@@ -1,7 +1,5 @@
 import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
-// ===================================================================
-// src/pages/beneficiary/MyRequests.tsx
-// ===================================================================
+// src/pages/beneficiary/MyRequests.tsx - POPRAWIONA WERSJA
 import { LoadingState, Alert, Hero, StatCard, Button, Card, EmptyState, Container, Section } from "@/components/ui/basic";
 import { useQuery } from "@tanstack/react-query";
 import { FileText, Clock, CheckCircle } from "lucide-react";
@@ -10,24 +8,31 @@ import { beneficiaryApi } from "./api/beneficiaries";
 import { useAuth } from "@/hooks/useAuth";
 export const MyRequests = () => {
     const navigate = useNavigate();
-    const { user, delegatedUser } = useAuth();
+    const { user, delegatedUser, loading: authLoading } = useAuth();
     // Użyj delegatedUser jeśli istnieje, w przeciwnym razie user
     const currentUser = delegatedUser || user;
     const beneficiaryId = currentUser?.id;
-    // Dodaj sprawdzenie czy użytkownik jest zalogowany
-    if (!currentUser || !beneficiaryId) {
-        return (_jsx(Container, { children: _jsx(Alert, { type: "error", title: "B\u0142\u0105d", message: "Nie mo\u017Cna za\u0142adowa\u0107 danych u\u017Cytkownika. Zaloguj si\u0119 ponownie." }) }));
-    }
+    // ✅ HOOKI MUSZĄ BYĆ ZAWSZE WYWOŁANE - używamy enabled do kontrolowania zapytań
     const { data: serviceRequests = [], isLoading: loadingSR, error: errorSR } = useQuery({
         queryKey: ['service-requests', beneficiaryId],
         queryFn: () => beneficiaryApi.getServiceRequests(beneficiaryId),
+        enabled: !!beneficiaryId, // Zapytanie wykonuje się tylko gdy mamy ID
     });
     const { data: auditRequests = [], isLoading: loadingAR, error: errorAR } = useQuery({
         queryKey: ['audit-requests', beneficiaryId],
         queryFn: () => beneficiaryApi.getAuditRequests(beneficiaryId),
+        enabled: !!beneficiaryId, // Zapytanie wykonuje się tylko gdy mamy ID
     });
     const isLoading = loadingSR || loadingAR;
     const error = errorSR || errorAR;
+    // ✅ Sprawdź czy auth się jeszcze ładuje
+    if (authLoading) {
+        return _jsx(LoadingState, { size: "lg" });
+    }
+    // ✅ Early return DOPIERO PO wszystkich hookach i sprawdzeniu loading
+    if (!currentUser || !beneficiaryId) {
+        return (_jsx(Container, { children: _jsx(Alert, { type: "error", title: "B\u0142\u0105d", message: "Nie mo\u017Cna za\u0142adowa\u0107 danych u\u017Cytkownika. Zaloguj si\u0119 ponownie." }) }));
+    }
     if (isLoading) {
         return _jsx(LoadingState, { size: "lg" });
     }
