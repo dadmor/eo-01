@@ -39,7 +39,11 @@ export const BeneficiaryRoutes = () => (
         </SidebarLayout>
       }
     />
-    <Route path="/beneficiary/requests/:id" element={<RequestDetail />} />
+    <Route path="/beneficiary/requests/:id" element={ <SidebarLayout userRole="beneficiary">
+          <Navigation />
+          <RequestDetail />
+        </SidebarLayout>} />
+   
     <Route
       path="/beneficiary/service-request"
       element={
