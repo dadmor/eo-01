@@ -35,39 +35,7 @@ const Navigation: React.FC = () => {
             </NavLink>
           </div>
 
-          {/* Desktop Navigation */}
-          <div className="hidden lg:flex items-center space-x-2">
-            <NavLink to="/beneficiary/my-requests" className={linkClass}>
-              <Button variant="ghost" icon={<User className="w-4 h-4" />}>
-                Beneficjent
-              </Button>
-            </NavLink>
-            <NavLink to="/auditor/marketplace" className={linkClass}>
-              <Button variant="ghost" icon={<User className="w-4 h-4" />}>
-                Audytor
-              </Button>
-            </NavLink>
-            <NavLink to="/operator/contacts" className={linkClass}>
-              <Button variant="ghost" icon={<User className="w-4 h-4" />}>
-                Operator
-              </Button>
-            </NavLink>
-            <NavLink to="/profile" className={linkClass}>
-              <Button variant="ghost" icon={<User className="w-4 h-4" />}>
-                Profil
-              </Button>
-            </NavLink>
-            <NavLink to="/admin/users" className={linkClass}>
-              <Button variant="ghost" icon={<Settings className="w-4 h-4" />}>
-                Użytkownicy
-              </Button>
-            </NavLink>
-            <NavLink to="/dashboard" className={linkClass}>
-              <Button variant="ghost" icon={<BarChart3 className="w-4 h-4" />}>
-                Dashboard
-              </Button>
-            </NavLink>
-          </div>
+          
 
           {/* Right side - Auth + Mobile Menu */}
           <div className="flex items-center gap-3">

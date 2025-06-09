@@ -3,7 +3,6 @@
 
   import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
   import { AuthRoutes } from "@/pages/auth";
-  import { DashboardRoutes } from "@/pages/dashboard";
   import { AdminRoutes } from "@/pages/admin";
   import { SharedRoutes } from "@/pages/shared";
   import { AuthProvider } from "@/hooks/useAuth";
@@ -24,7 +23,6 @@
             <main className=" min-h-screen">
               <Routes>
                 {AuthRoutes()}
-                {DashboardRoutes()}
                 {AdminRoutes()}
                 {SharedRoutes()}
                 {BeneficiaryRoutes()}
