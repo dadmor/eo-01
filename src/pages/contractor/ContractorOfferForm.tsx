@@ -16,7 +16,7 @@ import { contractorApi, ServiceRequestData } from './api/contractors';
 
 interface OfferFormData {
   request_id: string;
-  price: number;
+  price: string; // Zmienione na string - łatwiejsze w obsłudze
   scope: string;
 }
 
@@ -26,7 +26,7 @@ export const ContractorOfferForm: React.FC = () => {
 
   const [formData, setFormData] = useState<OfferFormData>({
     request_id: '',
-    price: 0,
+    price: '', // Pusty string zamiast 0
     scope: '',
   });
   const [errors, setErrors] = useState<Partial<OfferFormData>>({});
@@ -43,10 +43,9 @@ export const ContractorOfferForm: React.FC = () => {
   });
 
   const { mutate: createOffer, isPending, error: offerError } = useMutation({
-    mutationFn: (data: OfferFormData) =>
-      contractorApi.createOffer({ ...data, contractor_id: contractorId }),
+    mutationFn: (data: { request_id: string; price: number; scope: string; contractor_id: string }) =>
+      contractorApi.createOffer(data),
     onSuccess: () => {
-      // Poprawione wywołanie invalidateQueries:
       qc.invalidateQueries({ queryKey: ['contractor-offers'] });
       navigate('/contractor/offers');
     },
@@ -55,7 +54,13 @@ export const ContractorOfferForm: React.FC = () => {
   const validate = () => {
     const e: Partial<OfferFormData> = {};
     if (!formData.request_id) e.request_id = 'Wybierz zlecenie';
-    if (!formData.price || formData.price <= 0) e.price = 'Podaj poprawną cenę';
+    
+    // Walidacja ceny - sprawdzamy czy można przekonwertować na liczbę
+    const priceNum = parseFloat(formData.price);
+    if (!formData.price.trim() || isNaN(priceNum) || priceNum <= 0) {
+      e.price = 'Podaj poprawną cenę';
+    }
+    
     if (!formData.scope.trim()) e.scope = 'Opisz zakres prac';
     setErrors(e);
     return Object.keys(e).length === 0;
@@ -63,7 +68,14 @@ export const ContractorOfferForm: React.FC = () => {
 
   const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (validate()) createOffer(formData);
+    if (validate()) {
+      // Konwertujemy cenę na number dopiero przy wysyłaniu
+      createOffer({
+        ...formData,
+        price: parseFloat(formData.price),
+        contractor_id: contractorId
+      });
+    }
   };
 
   return (
@@ -99,7 +111,7 @@ export const ContractorOfferForm: React.FC = () => {
                 {errors.request_id && <p className="text-red-500 text-sm mt-1">{errors.request_id}</p>}
               </div>
 
-              {/* Cena */}
+              {/* Cena - POPRAWIONA WERSJA */}
               <div>
                 <label className="block text-sm font-medium mb-2">
                   <div className="flex items-center gap-2">
@@ -110,13 +122,9 @@ export const ContractorOfferForm: React.FC = () => {
                   type="number"
                   min="0"
                   step="0.01"
-                  value={formData.price === 0 ? '' : formData.price}
+                  value={formData.price}
                   onChange={e => {
-                    const val = e.target.value;
-                    setFormData(prev => ({
-                      ...prev,
-                      price: val === '' ? 0 : Number(val)
-                    }));
+                    setFormData(prev => ({ ...prev, price: e.target.value }));
                     setErrors(prev => ({ ...prev, price: undefined }));
                   }}
                   className={`w-full px-3 py-2 border rounded-md focus:ring-2 ${
