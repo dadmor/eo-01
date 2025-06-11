@@ -32,7 +32,7 @@ export const Login: React.FC = () => {
       case "auditor":
         return "/auditor/marketplace"; 
       case "operator":
-        return "/operator/dashboard"; 
+        return "/operator/contacts"; 
       case "admin":
         return "/admin/users";
       default:

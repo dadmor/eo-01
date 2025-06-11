@@ -20,10 +20,11 @@ import { Card } from "../ui/basic/Card";
 
 interface SidebarLayoutProps {
   children: React.ReactNode;
-  userRole?: "operator" | "auditor" | "beneficiary" | "contractor";
+  userRole?: "operator" | "auditor" | "beneficiary" | "contractor" | "admin";
 }
 
 const menuItems = {
+  admin: [{ path: "/admin/users", label: "Użytkownicy", icon: Users }],
   operator: [
     {
       path: "/operator/contacts",

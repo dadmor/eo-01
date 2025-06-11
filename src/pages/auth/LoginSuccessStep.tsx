@@ -31,6 +31,8 @@ export const LoginSuccessStep: React.FC<LoginSuccessStepProps> = ({
         return "Dashboard Wykonawcy";
       case "auditor":
         return "Panel Audytora";
+      case "operator":
+        return "Panel Operatora";
       default:
         return "Strona Główna";
     }
