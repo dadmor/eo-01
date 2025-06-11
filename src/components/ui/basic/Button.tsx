@@ -17,7 +17,7 @@ export const Button: React.FC<ButtonProps> = ({
   children,
   variant = "outline",
   size = "md",
-  type = "button",
+  type = "submit",
   onClick,
   className = "",
   icon,
